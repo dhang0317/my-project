@@ -13,6 +13,37 @@
   }
 })(typeof self !== 'undefined' ? self : this, function () {
 
+  // Common multi-word expressions, idioms & collocations (字組 / 慣用語)
+  const COMMON_PHRASES = {
+    "bien sûr": { lemma: "bien sûr", pos: "副詞片語", zh: "當然、自然" },
+    "d'accord": { lemma: "d'accord", pos: "片語", zh: "同意、好的" },
+    "tout de suite": { lemma: "tout de suite", pos: "副詞片語", zh: "立刻、馬上" },
+    "en train de": { lemma: "être en train de", pos: "動詞片語", zh: "正在…中" },
+    "avoir besoin de": { lemma: "avoir besoin de", pos: "動詞片語", zh: "需要…" },
+    "avoir envie de": { lemma: "avoir envie de", pos: "動詞片語", zh: "渴望、想要…" },
+    "avoir hâte de": { lemma: "avoir hâte de", pos: "動詞片語", zh: "迫不及待…" },
+    "en fait": { lemma: "en fait", pos: "副詞片語", zh: "事實上、其實" },
+    "au fait": { lemma: "au fait", pos: "副詞片語", zh: "對了、順便一提" },
+    "par exemple": { lemma: "par exemple", pos: "副詞片語", zh: "例如" },
+    "de temps en temps": { lemma: "de temps en temps", pos: "副詞片語", zh: "偶爾、有時" },
+    "petit à petit": { lemma: "petit à petit", pos: "副詞片語", zh: "漸漸地、一步步" },
+    "au fur et à mesure": { lemma: "au fur et à mesure", pos: "介系詞片語", zh: "隨著…進行" },
+    "tout à l'heure": { lemma: "tout à l'heure", pos: "時間副詞片語", zh: "剛才、待會兒" },
+    "tout à fait": { lemma: "tout à fait", pos: "副詞片語", zh: "完全地、正是如此" },
+    "grâce à": { lemma: "grâce à", pos: "介系詞片語", zh: "多虧、幸虧" },
+    "à cause de": { lemma: "à cause de", pos: "介系詞片語", zh: "因為、由於（負面）" },
+    "en plus": { lemma: "en plus", pos: "副詞片語", zh: "此外、而且" },
+    "non plus": { lemma: "non plus", pos: "副詞片語", zh: "也不（否定對等）" },
+    "peut-être": { lemma: "peut-être", pos: "副詞", zh: "也許、可能" },
+    "créer des liens": { lemma: "créer des liens", pos: "動詞片語", zh: "建立羈絆、產生連結" },
+    "l'un de l'autre": { lemma: "l'un de l'autre", pos: "代名詞片語", zh: "彼此、互相" },
+    "unique au monde": { lemma: "unique au monde", pos: "形容詞片語", zh: "世界上獨一無二的" },
+    "qu'est-ce que": { lemma: "qu'est-ce que", pos: "疑問片語", zh: "什麼" },
+    "qu'est-ce qui": { lemma: "qu'est-ce qui", pos: "疑問片語", zh: "什麼（主格）" },
+    "c'est-à-dire": { lemma: "c'est-à-dire", pos: "連接詞片語", zh: "也就是說、即" },
+    "il y a": { lemma: "il y a", pos: "無人稱片語", zh: "有；…以前" }
+  };
+
   // Core dictionary of high-frequency irregular verbs, words, and literary vocabulary
   const CORE_LEXICON = {
     // Irregular verb forms -> lemma, pos, tense/person info, Chinese meaning
@@ -509,10 +540,33 @@
   }
 
   /**
-   * Determine if selected text is a single word / short lexical item or a full sentence/clause
+   * Determine if selected text is a single word / phrase / idiom or a full sentence
    */
   function analyzeSelection(selectedText, contextSentence = "") {
     const trimmed = (selectedText || "").trim();
+    const cleanKey = trimmed.toLowerCase().replace(/^[«»"'“”‘’()[\],.!?;:—–-]+|[«»"'“”‘’()[\],.!?;:—–-]+$/g, '');
+
+    // Check if entire selection is a known multi-word phrase/idiom
+    if (COMMON_PHRASES[cleanKey]) {
+      const entry = COMMON_PHRASES[cleanKey];
+      return {
+        mode: "word",
+        selectedText: trimmed,
+        wordCount: trimmed.split(/\s+/).length,
+        primaryMorph: {
+          word: trimmed,
+          cleanWord: cleanKey,
+          lemma: entry.lemma,
+          pos: entry.pos,
+          morphology: "慣用字組 / 片語",
+          zhHint: entry.zh,
+          elision: null
+        },
+        tokens: [],
+        sentenceAnalysis: null
+      };
+    }
+
     const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
     const isWordMode = wordCount <= 3 && !/[.!?;:]/.test(trimmed);
 
@@ -543,6 +597,7 @@
   }
 
   return {
+    COMMON_PHRASES,
     CORE_LEXICON,
     inferMorphology,
     analyzeSentenceGrammar,

@@ -104,11 +104,15 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     ).join('');
   }
 
-  // 渲染內文：純法文文章，不加入任何中文字或多餘按鈕
+  // 渲染內文：自動識別「慣用字組／片語」（例如：Bien sûr, créer des liens, tout de suite）連成一組翻譯
   function renderContent() {
     const art = getCurrent();
     currentId = art.id;
     articleTitle.textContent = art.title;
+
+    const phrases = window.FrenchAnalyzer && window.FrenchAnalyzer.COMMON_PHRASES
+      ? Object.keys(window.FrenchAnalyzer.COMMON_PHRASES).sort((a, b) => b.length - a.length)
+      : ["bien sûr", "d'accord", "tout de suite", "créer des liens", "l'un de l'autre", "unique au monde", "en fait", "au fait", "par exemple", "tout à fait", "grâce à", "à cause de", "il y a"];
 
     const paragraphs = (art.content || '')
       .split(/\n\s*\n/)
@@ -116,12 +120,40 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
       .filter(Boolean);
 
     articleBody.innerHTML = paragraphs.map(para => {
-      const safe = escapeHtml(para);
-      const wrapped = safe.replace(
+      let safe = escapeHtml(para);
+      const placeholders = [];
+
+      // 先抓出常見字組 (Phrases/Idioms)
+      phrases.forEach((phrase, idx) => {
+        const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const reg = new RegExp(`\\b(${escapedPhrase})\\b`, 'gi');
+        if (reg.test(safe)) {
+          const token = `__PHRASE_${idx}__`;
+          safe = safe.replace(reg, (match) => {
+            placeholders.push({
+              token,
+              html: `<span class="fr-word fr-phrase" data-w="${match}">${match}</span>`
+            });
+            return token;
+          });
+        }
+      });
+
+      // 其餘單字包裹成單詞單元
+      safe = safe.replace(
         /([A-Za-zÀ-ÖØ-öø-ÿŒœÆæ]+(?:['’\-][A-Za-zÀ-ÖØ-öø-ÿŒœÆæ]+)*)/g,
-        '<span class="fr-word" data-w="$1">$1</span>'
+        (match) => {
+          if (match.startsWith('__PHRASE_')) return match;
+          return `<span class="fr-word" data-w="${match}">${match}</span>`;
+        }
       );
-      return `<p class="para-block">${wrapped}</p>`;
+
+      // 還原字組
+      for (const item of placeholders) {
+        safe = safe.replace(item.token, item.html);
+      }
+
+      return `<p class="para-block">${safe}</p>`;
     }).join('');
   }
 
