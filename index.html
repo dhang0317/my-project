@@ -2,398 +2,126 @@
 <html lang="zh-Hant" data-theme="warm-paper">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>L'Atelier de Lecture — 法式文章沉浸閱讀與反白翻譯工作坊</title>
-  <meta name="description" content="法式羊皮紙暖調沉浸式法文文章閱讀器，支援上傳文字檔、貼上文章、網址自動抓取，反白即享繁體中文智慧翻譯、動詞變位還原、生字本與 GitHub 雲端資料庫同步。" />
-
-  <!-- Google Fonts: Cormorant Garamond, Lora, Noto Serif TC, Plus Jakarta Sans, JetBrains Mono -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>法文閱讀翻譯器 — 上傳文章 · 點擊或反白即看中文</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Noto+Serif+TC:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Noto+Serif+TC:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=3" />
 </head>
 <body>
 
-  <!-- Top Editorial Navbar -->
-  <header class="top-navbar">
-    <div class="brand-group">
-      <div class="brand-emblem" aria-hidden="true">L</div>
-      <div class="brand-titles">
-        <h1>L'Atelier de Lecture</h1>
-        <span class="brand-subtitle">法文沉浸閱讀 · 反白智慧翻譯 · GitHub 雲端書庫</span>
-      </div>
+  <!-- 極簡頂部控制列 -->
+  <header class="simple-header">
+    <div class="header-left">
+      <span class="logo-badge">FR</span>
+      <select id="article-select" class="article-picker" aria-label="選擇法文文章">
+        <!-- 自動載入文章清單 -->
+      </select>
     </div>
 
-    <nav class="nav-tabs" aria-label="主要功能切換">
-      <button id="tab-reader-btn" class="nav-tab active" data-view="reader-view">
-        <span>📖 沉浸閱讀室</span>
-      </button>
-      <button id="tab-vocab-btn" class="nav-tab" data-view="vocab-view">
-        <span>🗂️ 生字本與重點</span>
-        <span id="vocab-count-badge" class="tab-badge">0</span>
-      </button>
-      <button id="tab-flashcard-btn" class="nav-tab" data-view="flashcard-view">
-        <span>🎴 字卡翻面複習</span>
-      </button>
-    </nav>
-
-    <div class="header-actions">
-      <button id="cloud-sync-btn" class="sync-pill" title="點擊設定或立即同步 GitHub 雲端資料庫">
-        <span id="sync-status-dot" class="sync-dot"></span>
-        <span id="sync-status-text">GitHub 雲端已同步</span>
-      </button>
-      <button id="open-upload-modal-btn" class="btn btn-primary">
-        <span>＋ 上傳 / 匯入法文文章</span>
-      </button>
-      <button id="theme-toggle-btn" class="btn btn-icon" title="切換羊皮紙日間 / 夜間深色模式" aria-label="切換深色模式">
-        🌙
-      </button>
+    <div class="header-right">
+      <button id="open-upload-btn" type="button" class="btn btn-primary">＋ 上傳 / 貼上法文</button>
+      <button id="open-vocab-btn" type="button" class="btn">⭐ 生字本 (<span id="vocab-count">0</span>)</button>
+      <button id="font-size-btn" type="button" class="btn btn-icon" title="放大/調整字體">A+</button>
+      <button id="theme-btn" type="button" class="btn btn-icon" title="深色模式">🌙</button>
     </div>
   </header>
 
-  <!-- ========================================================================
-       VIEW 1: Immersive French Reader + Floating Popover + Right Inspector
-       ======================================================================== -->
-  <main id="reader-view" class="view-section active">
-    <div class="reader-workspace">
+  <!-- 純淨單欄法文閱讀區 -->
+  <main class="reader-main">
+    <article class="paper-sheet">
+      <header class="sheet-header">
+        <h1 id="article-title" class="sheet-title">Le Petit Prince</h1>
+        <p class="sheet-hint">
+          👆 <strong>iPad / 手機直接「點一下單字」或「反白選取文字」</strong>，底部即刻顯示中文翻譯！（點「整句中譯」可看全段翻譯）
+        </p>
+      </header>
 
-      <!-- Left Column: Article Library -->
-      <aside class="library-sidebar" aria-label="法文文章書庫">
-        <div class="sidebar-header">
-          <span class="sidebar-title">📚 法文文章書庫 (<span id="article-count-num">0</span>)</span>
-          <button id="quick-add-article-btn" class="btn" style="padding: 4px 9px; font-size: 12px;">＋ 新增</button>
-        </div>
-        <div id="article-list-container" class="article-list">
-          <!-- Populated dynamically -->
-        </div>
-      </aside>
-
-      <!-- Center Column: French Article Reading Canvas -->
-      <section id="reading-scroll-pane" class="reading-pane" aria-label="文章閱讀區">
-        <div class="reader-toolbar">
-          <div class="toolbar-group">
-            <span>字級大小</span>
-            <div class="toolbar-control">
-              <button id="font-dec-btn" class="toolbar-btn" title="縮小字體">A−</button>
-              <span id="font-size-label" style="min-width: 36px; text-align: center; font-weight: 600;">21px</span>
-              <button id="font-inc-btn" class="toolbar-btn" title="放大字體">A＋</button>
-            </div>
-
-            <span>行距</span>
-            <div class="toolbar-control">
-              <button id="line-tight-btn" class="toolbar-btn" title="緊湊行距">1.6</button>
-              <button id="line-normal-btn" class="toolbar-btn" title="舒適行距">1.85</button>
-              <button id="line-loose-btn" class="toolbar-btn" title="寬鬆行距">2.1</button>
-            </div>
-          </div>
-
-          <div class="toolbar-group">
-            <span>閱讀進度：<strong id="current-progress-label">0%</strong></span>
-            <button id="mark-read-complete-btn" class="btn" style="padding: 3px 10px; font-size: 12px;">✓ 標記完讀</button>
-          </div>
-        </div>
-
-        <article class="reading-article-container">
-          <header class="article-header">
-            <div class="article-kicker">
-              <span id="reader-article-category">文學經典</span>
-              <span>·</span>
-              <span id="reader-word-count">0 字</span>
-            </div>
-            <h2 id="reader-article-title" class="article-main-title">載入文章中...</h2>
-            <div class="article-subtitle">
-              <span id="reader-article-subtitle"></span>
-              <a id="reader-source-link" href="#" target="_blank" rel="noopener noreferrer" style="color: var(--accent-navy); font-size: 13px; text-decoration: none; display: none;">🔗 查看原始來源網頁 ↗</a>
-            </div>
-          </header>
-
-          <div class="reading-tip-banner">
-            <span>💡 <strong>iPad / 手機 / 電腦皆適用</strong>：<strong>直接點一下單字</strong>、<strong>長按拖曳反白句子</strong>、或點擊段落末端的 <strong>「譯」按鈕</strong>，即可立即查看繁體中文翻譯、動詞原形還原並標記螢光筆！</span>
-          </div>
-
-          <div id="reader-article-body" class="article-body">
-            <!-- French paragraphs rendered here -->
-          </div>
-        </article>
-      </section>
-
-      <!-- Right Column: Fixed Linguistic & Grammar Inspector + Saved Highlights -->
-      <aside class="inspector-sidebar" aria-label="翻譯與語法深度解析面板">
-        <div class="sidebar-header">
-          <span class="sidebar-title">🔍 智慧翻譯與語法解析</span>
-          <span id="inspector-mode-badge" class="popover-mode-tag">等待反白選取</span>
-        </div>
-
-        <div class="inspector-body">
-          <!-- Dynamic Active Selection Inspector -->
-          <div id="inspector-active-panel">
-            <div class="inspector-empty">
-              <div class="inspector-empty-title">在左側文章反白任何法文文字</div>
-              <p style="font-size: 13px; line-height: 1.6;">
-                • <strong>反白單字／片語</strong>：自動分析詞性、還原動詞原形 (Infinitif)、陰陽性單複數與中文字義。<br/>
-                • <strong>反白整句／段落</strong>：提供流暢繁體中文整句翻譯與法文語法句型拆解。
-              </p>
-            </div>
-          </div>
-
-          <!-- Current Article Highlights List -->
-          <div class="inspector-card">
-            <div class="inspector-section-label">
-              <span>🖍️ 本篇螢光筆重點標記</span>
-              <span id="article-hl-count">0 筆</span>
-            </div>
-            <div id="article-highlights-list" class="saved-hl-list">
-              <!-- Populated dynamically -->
-            </div>
-          </div>
-        </div>
-      </aside>
-
-    </div>
+      <div id="article-body" class="sheet-body">
+        <!-- 法文段落與單字顯示於此 -->
+      </div>
+    </article>
   </main>
 
-  <!-- ========================================================================
-       VIEW 2: Vocabulary Notebook & Export (CSV / Anki / JSON)
-       ======================================================================== -->
-  <section id="vocab-view" class="view-section" aria-label="生字本管理">
-    <div class="vocab-container">
-      <div class="vocab-header">
-        <div>
-          <h2 class="vocab-title">🗂️ 我的法文生字本與重點筆記</h2>
-          <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
-            所有在閱讀時透過反白加入的單字、動詞原形與原句上下文都會自動保存在此，並同步至 GitHub 雲端資料庫。
-          </p>
+  <!-- 底部固定翻譯抽屜 (Bottom Translation Dock — iPad 絕對不遮擋、100% 穩定顯示) -->
+  <aside id="translation-dock" class="translation-dock" aria-live="polite">
+    <div class="dock-inner">
+      <div class="dock-main">
+        <div class="dock-top-row">
+          <span id="dock-fr-text" class="dock-fr">請點選或反白上方任一法文單字／句子</span>
+          <span id="dock-lemma-badge" class="dock-badge" style="display: none;">原形: -</span>
+          <span id="dock-pos-badge" class="dock-pos" style="display: none;"></span>
         </div>
-        <div class="vocab-controls">
-          <input id="vocab-search-input" type="search" class="search-input" placeholder="搜尋法文單字、原形或中文翻譯..." />
-          <select id="vocab-color-filter" class="form-select" style="width: auto; padding: 8px 12px;">
-            <option value="all">全部螢光筆顏色</option>
-            <option value="amber">🟡 琥珀黃 (核心單字)</option>
-            <option value="burgundy">🔴 勃根地紅 (動詞/片語)</option>
-            <option value="sage">🟢 鼠尾草綠 (佳句/語法)</option>
-            <option value="slate">🔵 迷霧藍 (專有名詞/其他)</option>
-          </select>
-          <button id="export-anki-btn" class="btn btn-navy">⬇ 匯出 Anki / CSV</button>
-          <button id="export-json-btn" class="btn">⬇ 匯出完整 JSON 備份</button>
+        <div id="dock-zh-text" class="dock-zh">
+          點一下文章中的法文單字，或用手指長按反白一段文字，這裡會立即顯示繁體中文翻譯與動詞原形。
         </div>
+        <div id="dock-extra-note" class="dock-note" style="display: none;"></div>
       </div>
 
-      <div id="vocab-grid-container" class="vocab-grid">
-        <!-- Vocabulary cards populated dynamically -->
+      <div class="dock-actions">
+        <button id="translate-selection-btn" type="button" class="btn btn-navy" style="display: none;">
+          🔍 翻譯目前反白文字
+        </button>
+        <button id="save-word-btn" type="button" class="btn btn-primary" style="display: none;">
+          🖍️ 標記螢光筆＋存生字
+        </button>
       </div>
     </div>
-  </section>
+  </aside>
 
-  <!-- ========================================================================
-       VIEW 3: Interactive Flashcard Review Mode
-       ======================================================================== -->
-  <section id="flashcard-view" class="view-section" aria-label="字卡翻面複習">
-    <div class="vocab-container">
-      <div class="vocab-header">
-        <div>
-          <h2 class="vocab-title">🎴 法文生字記憶卡 (Flashcards)</h2>
-          <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
-            點擊卡片即可翻面查看繁體中文解釋、動詞原形與文章原句上下文。
-          </p>
-        </div>
-        <div class="vocab-controls">
-          <span id="flashcard-counter" style="font-weight: 600; color: var(--text-secondary);">第 1 / 1 張</span>
-          <button id="flashcard-shuffle-btn" class="btn">🔀 隨機洗牌</button>
-        </div>
+  <!-- 彈窗 1：上傳 / 貼上法文文章 / 網址抓取 -->
+  <div id="upload-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>＋ 上傳或貼上法文文章</h2>
+        <button id="close-upload-btn" type="button" class="btn btn-icon">✕</button>
       </div>
 
-      <div class="flashcard-stage">
-        <div id="flashcard-box" class="flashcard-box" role="button" tabindex="0" aria-label="點擊翻開記憶卡">
-          <span id="fc-pos-badge" class="popover-mode-tag" style="margin-bottom: 12px;">動詞</span>
-          <div id="fc-front-word" class="flashcard-word">apprivoisé</div>
-          <div id="fc-front-lemma" style="font-size: 14px; color: var(--text-muted); font-family: var(--font-mono);">原形：apprivoiser</div>
-          <div style="margin-top: 16px; font-size: 12.5px; color: var(--text-muted);">（點擊卡片翻看中文翻譯與原句）</div>
-
-          <div id="fc-back-answer" class="flashcard-answer">
-            <div id="fc-zh-meaning" style="font-family: var(--font-serif-ui); font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">
-              被馴養的、被馴服的
-            </div>
-            <div id="fc-grammar-note" style="font-size: 13.5px; color: var(--text-secondary); margin-bottom: 14px;"></div>
-            <div id="fc-context-box" class="vocab-card-context" style="text-align: left;">
-              <div id="fc-context-fr" style="font-weight: 600; margin-bottom: 4px;"></div>
-              <div id="fc-context-zh" style="font-family: var(--font-sans-ui); font-size: 13px; color: var(--text-muted);"></div>
-            </div>
-          </div>
+      <div class="modal-body">
+        <div class="upload-row">
+          <label class="file-btn">
+            📄 選擇 .txt / .md 檔案上傳
+            <input id="file-input" type="file" accept=".txt,.md,text/plain" hidden />
+          </label>
+          <span style="font-size: 13px; color: var(--text-muted);">或直接在下方貼上法文內容：</span>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 22px;">
-          <button id="fc-prev-btn" class="btn">← 上一張</button>
-          <button id="fc-flip-btn" class="btn btn-navy">🔄 翻面 (空白鍵)</button>
-          <button id="fc-mastered-btn" class="btn btn-primary">✓ 標記熟練並下一張 →</button>
-          <button id="fc-next-btn" class="btn">下一張 →</button>
+        <input id="input-title" type="text" class="text-input" placeholder="文章標題（選填，例如：法國新聞、小王子）" />
+        <textarea id="input-content" class="text-area" placeholder="在此貼上法文文章內文..."></textarea>
+
+        <div class="url-fetch-box">
+          <input id="input-url" type="url" class="text-input" placeholder="或輸入法文維基/文章網址 (https://...)" style="margin-bottom:0;" />
+          <button id="fetch-url-btn" type="button" class="btn btn-navy">抓取網址</button>
         </div>
-      </div>
-    </div>
-  </section>
+        <div id="url-status" style="font-size: 13px; color: var(--accent-burgundy); margin-top: 6px;"></div>
 
-  <!-- ========================================================================
-       FLOATING SELECTION POPOVER (Appears right above highlighted French text)
-       ======================================================================== -->
-  <div id="selection-popover" class="selection-popover" role="dialog" aria-label="反白文字快速翻譯">
-    <div class="popover-header">
-      <div id="popover-fr-word" class="popover-fr-text">apprivoiser</div>
-      <span id="popover-mode-label" class="popover-mode-tag">單字解析</span>
-    </div>
-    <div id="popover-lemma-container" class="popover-lemma-row">
-      <span id="popover-lemma-chip" class="lemma-chip">原形: apprivoiser</span>
-      <span id="popover-pos-text">動詞</span>
-    </div>
-    <div id="popover-zh-box" class="popover-zh-translation">
-      翻譯中...
-    </div>
-    <div class="popover-footer">
-      <div class="color-swatches" title="選擇螢光筆顏色並存入生字本">
-        <button class="swatch-btn swatch-amber active" data-color="amber" title="琥珀黃螢光筆"></button>
-        <button class="swatch-btn swatch-burgundy" data-color="burgundy" title="勃根地紅螢光筆"></button>
-        <button class="swatch-btn swatch-sage" data-color="sage" title="鼠尾草綠螢光筆"></button>
-        <button class="swatch-btn swatch-slate" data-color="slate" title="迷霧藍螢光筆"></button>
-      </div>
-      <button id="popover-save-btn" class="btn btn-primary" style="padding: 5px 12px; font-size: 12.5px;">
-        🖍️ 螢光筆標記＋存生字
-      </button>
-    </div>
-  </div>
-
-  <!-- ========================================================================
-       MODAL 1: Upload / Paste French Article / Fetch URL
-       ======================================================================== -->
-  <div id="upload-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="upload-modal-title">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 id="upload-modal-title" class="modal-title">＋ 上傳或匯入法文文章</h3>
-        <button id="close-upload-modal-btn" class="btn btn-icon" aria-label="關閉視窗">✕</button>
-      </div>
-
-      <!-- Mode Switcher inside Modal -->
-      <div class="nav-tabs" style="margin-bottom: 18px; width: 100%; justify-content: stretch;">
-        <button class="nav-tab active" data-import-tab="paste" style="flex: 1; justify-content: center;">✍️ 貼上文字 / 上傳檔案 (.txt, .md)</button>
-        <button class="nav-tab" data-import-tab="url" style="flex: 1; justify-content: center;">🌐 輸入法國新聞或文章網址 (URL)</button>
-      </div>
-
-      <!-- Tab A: Paste or File Upload -->
-      <div id="import-pane-paste">
-        <div class="form-group">
-          <label class="form-label">方式一：拖曳或點擊上傳本地純文字檔 (.txt, .md)</label>
-          <div id="file-dropzone" class="file-dropzone">
-            <input id="file-upload-input" type="file" accept=".txt,.md,text/plain,text/markdown" style="display: none;" />
-            <div style="font-weight: 600; color: var(--accent-burgundy); margin-bottom: 4px;">📄 點擊選擇檔案 或 將法文 .txt / .md 檔案拖曳至此</div>
-            <div style="font-size: 12px; color: var(--text-muted);">上傳後將自動填入下方標題與內文欄位，可預覽修改後儲存</div>
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
-          <div class="form-group">
-            <label class="form-label" for="article-title-input">文章標題 (Titre)</label>
-            <input id="article-title-input" type="text" class="form-input" placeholder="例如：Le Monde — La culture française..." />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="article-category-input">文章分類</label>
-            <select id="article-category-input" class="form-select">
-              <option value="新聞時事">新聞時事 (Actualités)</option>
-              <option value="文學經典">文學經典 (Littérature)</option>
-              <option value="文化生活">文化生活 (Culture & Vie)</option>
-              <option value="商業科技">商業科技 (Économie & Tech)</option>
-              <option value="學習筆記">自訂閱讀 (Notes)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="article-content-input">法文文章內文 (Contenu en français)</label>
-          <textarea id="article-content-input" class="form-textarea" placeholder="在此貼上你想閱讀的法文文章段落..."></textarea>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 10px;">
-          <button id="cancel-upload-btn" class="btn">取消</button>
-          <button id="save-article-btn" class="btn btn-primary">✓ 儲存文章並開始閱讀</button>
-        </div>
-      </div>
-
-      <!-- Tab B: URL Automatic Extraction -->
-      <div id="import-pane-url" style="display: none;">
-        <div class="form-group">
-          <label class="form-label" for="article-url-input">輸入法文新聞、維基百科或部落格文章網址 (URL)</label>
-          <div style="display: flex; gap: 8px;">
-            <input id="article-url-input" type="url" class="form-input" placeholder="https://fr.wikipedia.org/wiki/Paris 或法國新聞網址..." />
-            <button id="fetch-url-btn" class="btn btn-navy" style="white-space: nowrap;">🌐 自動擷取內文</button>
-          </div>
-          <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
-            提示：你可以點擊下方快速測試按鈕，立即體驗從法文網站自動抓取正文並匯入閱讀器！
-          </p>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-            <button class="btn url-preset-btn" data-url="https://fr.wikipedia.org/wiki/Croissant_(viennoiserie)" style="font-size: 12px; padding: 4px 10px;">🥐 範例網址：法文維基《可頌 Croissant》</button>
-            <button class="btn url-preset-btn" data-url="https://fr.wikipedia.org/wiki/Mus%C3%A9e_du_Louvre" style="font-size: 12px; padding: 4px 10px;">🏛️ 範例網址：法文維基《羅浮宮 Louvre》</button>
-          </div>
-        </div>
-        <div id="url-fetch-status" style="font-size: 13px; color: var(--accent-burgundy); margin-top: 8px;"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========================================================================
-       MODAL 2: GitHub Cloud Database Sync Settings
-       ======================================================================== -->
-  <div id="sync-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="sync-modal-title">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h3 id="sync-modal-title" class="modal-title">☁️ GitHub 雲端資料庫同步中心</h3>
-        <button id="close-sync-modal-btn" class="btn btn-icon" aria-label="關閉視窗">✕</button>
-      </div>
-
-      <div class="reading-tip-banner" style="margin-bottom: 18px;">
-        <div>
-          <strong>雙軌自動雲端儲存架構：</strong><br/>
-          1. <strong>本地開發環境模式</strong>：系統會直接透過後端將你的文章、螢光筆與生字本寫入 <code style="font-family: var(--font-mono);">data/library.json</code> 並自動 Commit & Push 同步至你的 GitHub 儲存庫 <code style="font-family: var(--font-mono);">dhang0317/my-project</code>。<br/>
-          2. <strong>GitHub Pages 跨裝置網頁模式</strong>：若你在手機或外部瀏覽器開啟 GitHub Pages 靜態網址，可在下方填入 GitHub Personal Access Token (PAT)，即可直接從瀏覽器透過 GitHub REST API 讀寫雲端資料庫！
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="gh-repo-input">GitHub 儲存庫 (Owner / Repo)</label>
-        <input id="gh-repo-input" type="text" class="form-input" value="dhang0317/my-project" />
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div class="form-group">
-          <label class="form-label" for="gh-branch-input">分支名稱 (Branch)</label>
-          <input id="gh-branch-input" type="text" class="form-input" value="main" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="gh-path-input">資料庫檔案路徑</label>
-          <input id="gh-path-input" type="text" class="form-input" value="data/library.json" readonly />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="gh-token-input">GitHub Personal Access Token (選填，僅外部靜態 GitHub Pages 跨裝置寫入需要)</label>
-        <input id="gh-token-input" type="password" class="form-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx (僅保存在你的瀏覽器本地)" />
-      </div>
-
-      <div id="sync-log-box" style="background-color: var(--bg-secondary); padding: 10px 13px; border-radius: var(--radius-sm); font-size: 12.5px; color: var(--text-secondary); margin-bottom: 18px;">
-        狀態：準備就緒。
-      </div>
-
-      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-        <button id="pull-cloud-btn" class="btn">⬇ 從 GitHub 雲端重新載入最新資料</button>
-        <div style="display: flex; gap: 10px;">
-          <button id="save-sync-config-btn" class="btn btn-navy">💾 儲存設定</button>
-          <button id="push-cloud-now-btn" class="btn btn-primary">☁️ 立即同步推送至 GitHub</button>
+        <div class="modal-foot">
+          <button id="save-article-btn" type="button" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">
+            ✓ 開始閱讀這篇法文文章
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast Container -->
-  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+  <!-- 彈窗 2：我的生字本與匯出 -->
+  <div id="vocab-modal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>⭐ 我的法文生字本</h2>
+        <div style="display: flex; gap: 8px;">
+          <button id="export-csv-btn" type="button" class="btn">⬇ 匯出 CSV</button>
+          <button id="close-vocab-btn" type="button" class="btn btn-icon">✕</button>
+        </div>
+      </div>
+      <div id="vocab-list" class="vocab-list">
+        <!-- 生字列表 -->
+      </div>
+    </div>
+  </div>
 
-  <!-- Scripts -->
-  <script src="js/french-analyzer.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/french-analyzer.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>
