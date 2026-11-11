@@ -395,37 +395,44 @@
   }
 
   /**
-   * Apply saved highlights inside a paragraph safely without breaking HTML tags
+   * Apply saved highlights AND interactive clickable French word tokens (.fr-word)
+   * so iPad/iOS users can simply tap any word to translate immediately!
    */
   function decorateParagraphWithHighlights(paragraphText, highlights) {
     let safeHtml = escapeHtml(paragraphText);
-    if (!Array.isArray(highlights) || highlights.length === 0) {
-      return safeHtml;
+    const placeholders = [];
+
+    if (Array.isArray(highlights) && highlights.length > 0) {
+      const sorted = [...highlights]
+        .filter(h => h && h.text && h.text.trim().length > 0)
+        .sort((a, b) => b.text.length - a.text.length);
+
+      sorted.forEach((hl, idx) => {
+        const targetEscaped = escapeHtml(hl.text.trim());
+        if (!targetEscaped) return;
+        const escapedRegex = targetEscaped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedRegex})`, 'i');
+        if (regex.test(safeHtml)) {
+          const token = `___HLTOKEN_${idx}___`;
+          safeHtml = safeHtml.replace(regex, (match) => {
+            placeholders.push({
+              token,
+              html: `<mark class="hl-mark hl-${escapeHtml(hl.color || 'amber')}" data-hl-id="${escapeHtml(hl.id)}" title="點擊查看翻譯：${escapeHtml(hl.translation)}">${match}</mark>`
+            });
+            return token;
+          });
+        }
+      });
     }
 
-    // Sort highlights by length descending so longer phrases match first
-    const sorted = [...highlights]
-      .filter(h => h && h.text && h.text.trim().length > 0)
-      .sort((a, b) => b.text.length - a.text.length);
-
-    // Use placeholders to avoid nested replacements
-    const placeholders = [];
-    sorted.forEach((hl, idx) => {
-      const targetEscaped = escapeHtml(hl.text.trim());
-      if (!targetEscaped) return;
-      const escapedRegex = targetEscaped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`(${escapedRegex})`, 'i');
-      if (regex.test(safeHtml)) {
-        const token = `__HL_TOKEN_${idx}__`;
-        safeHtml = safeHtml.replace(regex, (match) => {
-          placeholders.push({
-            token,
-            html: `<mark class="hl-mark hl-${escapeHtml(hl.color || 'amber')}" data-hl-id="${escapeHtml(hl.id)}" title="點擊查看翻譯：${escapeHtml(hl.translation)}">${match}</mark>`
-          });
-          return token;
-        });
+    // Wrap remaining French words (including elisions like l'esprit, c'est, qu'avec) in <span class="fr-word">
+    safeHtml = safeHtml.replace(
+      /([A-Za-zÀ-ÖØ-öø-ÿŒœÆæ]+(?:['’\-][A-Za-zÀ-ÖØ-öø-ÿŒœÆæ]+)*)/g,
+      (wordMatch) => {
+        if (wordMatch.startsWith('___HLTOKEN_')) return wordMatch;
+        return `<span class="fr-word" data-word="${wordMatch}">${wordMatch}</span>`;
       }
-    });
+    );
 
     for (const item of placeholders) {
       safeHtml = safeHtml.replace(item.token, item.html);
@@ -460,20 +467,66 @@
     const highlights = art.highlights || [];
     el.readerBody.innerHTML = paragraphs.map((pText, idx) => {
       const decorated = decorateParagraphWithHighlights(pText, highlights);
-      return `<p class="article-paragraph" data-p-idx="${idx}">${decorated}</p>`;
+      return `<p class="article-paragraph" data-p-idx="${idx}" data-raw-para="${escapeHtml(pText)}">${decorated} <button type="button" class="para-translate-btn" data-para-idx="${idx}" title="翻譯並拆解此整段法文">譯 整段</button></p>`;
     }).join('');
 
-    // Attach click listener on existing highlight marks
+    // 1. Attach click listener on existing highlight marks
     el.readerBody.querySelectorAll('.hl-mark').forEach(markEl => {
       markEl.addEventListener('click', (e) => {
         e.stopPropagation();
         const hlId = markEl.dataset.hlId;
         const hlObj = (art.highlights || []).find(h => h.id === hlId);
         if (hlObj) {
-          inspectSavedHighlight(hlObj);
+          const rect = markEl.getBoundingClientRect();
+          triggerTranslationForText(hlObj.text, hlObj.context || hlObj.text, rect);
         }
       });
     });
+
+    // 2. Attach direct tap/click listener on every French word (.fr-word) for instant iPad/Mobile lookup
+    el.readerBody.querySelectorAll('.fr-word').forEach(wordEl => {
+      wordEl.addEventListener('click', (e) => {
+        // If user has dragged a multi-word range selection, let selection handler process it
+        const sel = window.getSelection();
+        if (sel && !sel.isCollapsed && sel.toString().trim().length > wordEl.textContent.trim().length + 2) {
+          return;
+        }
+        e.stopPropagation();
+        el.readerBody.querySelectorAll('.fr-word.active-word').forEach(w => w.classList.remove('active-word'));
+        wordEl.classList.add('active-word');
+
+        const wordText = wordEl.dataset.word || wordEl.textContent.trim();
+        const paraEl = wordEl.closest('.article-paragraph');
+        const rawPara = paraEl ? (paraEl.dataset.rawPara || paraEl.textContent) : wordText;
+        const contextSentence = findSentenceContainingWord(wordText, rawPara);
+        const rect = wordEl.getBoundingClientRect();
+
+        triggerTranslationForText(wordText, contextSentence, rect);
+      });
+    });
+
+    // 3. Attach click listener on paragraph "譯 整段" button
+    el.readerBody.querySelectorAll('.para-translate-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const paraEl = btn.closest('.article-paragraph');
+        const rawPara = paraEl ? (paraEl.dataset.rawPara || '') : '';
+        if (!rawPara) return;
+        const rect = btn.getBoundingClientRect();
+        triggerTranslationForText(rawPara, rawPara, rect);
+      });
+    });
+  }
+
+  function findSentenceContainingWord(wordText, fullParagraphText) {
+    if (!fullParagraphText) return wordText;
+    const sentences = fullParagraphText.match(/[^.!?«»]+[.!?«»]*\s*/g) || [fullParagraphText];
+    for (const s of sentences) {
+      if (s.toLowerCase().includes(wordText.toLowerCase())) {
+        return s.trim();
+      }
+    }
+    return fullParagraphText.slice(0, 260).trim();
   }
 
   function renderArticleHighlightsSidebar() {
@@ -484,7 +537,7 @@
     if (highlights.length === 0) {
       el.articleHighlightsList.innerHTML = `
         <div style="font-size: 12.5px; color: var(--text-muted); padding: 10px 4px;">
-          本篇尚無螢光筆標記。在文章中反白法文即可一鍵標記重點！
+          本篇尚無螢光筆標記。點擊單字或反白法文即可一鍵標記重點！
         </div>
       `;
       return;
@@ -530,19 +583,11 @@
   }
 
   // ==========================================================================
-  // Text Selection (Anti-White / 反白) Translation & Linguistic Analysis
+  // Text Selection (Anti-White / 反白) & Tap Translation Engine
   // ==========================================================================
   function extractSurroundingSentence(selection, fullParagraphText) {
     const selectedText = selection.toString().trim();
-    if (!fullParagraphText) return selectedText;
-    // Split paragraph into sentences
-    const sentences = fullParagraphText.match(/[^.!?«»]+[.!?«»]*\s*/g) || [fullParagraphText];
-    for (const s of sentences) {
-      if (s.includes(selectedText)) {
-        return s.trim();
-      }
-    }
-    return fullParagraphText.slice(0, 260).trim();
+    return findSentenceContainingWord(selectedText, fullParagraphText);
   }
 
   async function fetchTranslationAndAnalysis(selectedText, contextSentence) {
@@ -560,13 +605,14 @@
       } catch (_) {}
     }
 
-    // 2. Direct browser fallback (for GitHub Pages static deployment)
+    // 2. Direct browser fallback (for GitHub Pages static deployment & iPad Safari)
     const analysis = window.FrenchAnalyzer.analyzeSelection(selectedText, contextSentence);
     let primaryTranslation = '';
     let dictEntries = [];
     let lemmaTranslation = '';
     let contextTranslation = '';
 
+    // Try Google Translate GTX first, then fallback to MyMemory if blocked by Safari tracking prevention
     try {
       const gtUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-TW&dt=t&dt=bd&q=${encodeURIComponent(selectedText)}`;
       const resp = await fetch(gtUrl);
@@ -583,6 +629,17 @@
         }
       }
     } catch (_) {}
+
+    if (!primaryTranslation) {
+      try {
+        const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(selectedText)}&langpair=fr|zh-TW`;
+        const mmResp = await fetch(mmUrl);
+        if (mmResp.ok) {
+          const mmData = await mmResp.json();
+          primaryTranslation = mmData?.responseData?.translatedText || '';
+        }
+      } catch (_) {}
+    }
 
     if (!primaryTranslation && analysis.primaryMorph?.zhHint) {
       primaryTranslation = analysis.primaryMorph.zhHint;
@@ -620,7 +677,7 @@
 
     return {
       text: selectedText,
-      translation: primaryTranslation || '（請參考右側語法與字根解析）',
+      translation: primaryTranslation || '（請參考下方語法與字根解析）',
       lemmaTranslation,
       dictEntries,
       contextSentence,
@@ -630,16 +687,27 @@
   }
 
   function positionPopoverNearRect(rect) {
-    const popWidth = 340;
-    const popHeight = 210;
-    const margin = 12;
+    const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    const popWidth = Math.min(360, window.innerWidth - 24);
+    const popHeight = 220;
+    const margin = 14;
 
     let left = rect.left + rect.width / 2 - popWidth / 2;
-    left = Math.max(16, Math.min(window.innerWidth - popWidth - 16, left));
+    left = Math.max(12, Math.min(window.innerWidth - popWidth - 12, left));
 
-    let top = rect.top - popHeight - margin;
-    if (top < 70) {
+    // On iPad/iOS, native selection callout menu ("拷貝 | 查詢 | 翻譯") appears ABOVE the text.
+    // So on touch devices, prefer placing our translation popover BELOW the selected text!
+    let top;
+    if (isTouchDevice) {
       top = rect.bottom + margin;
+      if (top + popHeight > window.innerHeight - 16) {
+        top = Math.max(70, rect.top - popHeight - margin);
+      }
+    } else {
+      top = rect.top - popHeight - margin;
+      if (top < 70) {
+        top = rect.bottom + margin;
+      }
     }
 
     el.popover.style.left = `${Math.round(left)}px`;
@@ -649,29 +717,17 @@
 
   function hidePopover() {
     el.popover.classList.remove('visible');
+    if (el.readerBody) {
+      el.readerBody.querySelectorAll('.fr-word.active-word').forEach(w => w.classList.remove('active-word'));
+    }
   }
 
-  async function handleArticleTextSelection() {
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed) return;
+  async function triggerTranslationForText(rawText, contextSentence, rect) {
+    const cleanText = (rawText || '').replace(/譯\s*整段/g, '').trim();
+    if (!cleanText) return;
 
-    const rawText = sel.toString().trim();
-    if (!rawText || rawText.length < 2 || rawText.length > 900) return;
-
-    // Ensure selection is inside #reader-article-body
-    const anchorNode = sel.anchorNode;
-    if (!anchorNode || !el.readerBody.contains(anchorNode)) return;
-
-    const paragraphEl = (anchorNode.nodeType === 1 ? anchorNode : anchorNode.parentElement)?.closest('.article-paragraph');
-    const paragraphText = paragraphEl ? paragraphEl.textContent.trim() : rawText;
-    const contextSentence = extractSurroundingSentence(sel, paragraphText);
-
-    const range = sel.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-
-    // Instant local analysis preview in Popover before network translation returns
-    const localPreview = window.FrenchAnalyzer.analyzeSelection(rawText, contextSentence);
-    el.popoverFrWord.textContent = rawText.length > 60 ? rawText.slice(0, 58) + '…' : rawText;
+    const localPreview = window.FrenchAnalyzer.analyzeSelection(cleanText, contextSentence);
+    el.popoverFrWord.textContent = cleanText.length > 60 ? cleanText.slice(0, 58) + '…' : cleanText;
     el.popoverModeLabel.textContent = localPreview.mode === 'word' ? '單字 / 片語模式' : '整句 / 段落模式';
 
     if (localPreview.mode === 'word' && localPreview.primaryMorph) {
@@ -686,25 +742,52 @@
       ? `${localPreview.primaryMorph.zhHint}（正在查詢完整翻譯...）`
       : '正在翻譯為繁體中文...';
 
-    positionPopoverNearRect(rect);
+    if (rect) {
+      positionPopoverNearRect(rect);
+    }
 
-    // Fetch full translation + dictionary + context translation
-    const result = await fetchTranslationAndAnalysis(rawText, contextSentence);
+    const result = await fetchTranslationAndAnalysis(cleanText, contextSentence);
     state.activeSelection = {
-      text: rawText,
+      text: cleanText,
       contextSentence,
       result
     };
 
-    // Update Popover with final translation
     const displayZh = (result.analysis?.primaryMorph?.zhHint && result.translation !== result.analysis.primaryMorph.zhHint)
       ? `${result.translation} · ${result.analysis.primaryMorph.zhHint}`
       : result.translation;
 
     el.popoverZhBox.textContent = displayZh;
-
-    // Update Right Fixed Linguistic Inspector Panel
     renderInspectorPanel(result);
+  }
+
+  async function handleArticleTextSelection() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+
+    const rawText = sel.toString().replace(/譯\s*整段/g, '').trim();
+    if (!rawText || rawText.length < 2 || rawText.length > 1000) return;
+
+    // Avoid re-triggering if selection text is identical to current active popover
+    if (
+      el.popover.classList.contains('visible') &&
+      state.activeSelection &&
+      state.activeSelection.text === rawText
+    ) {
+      return;
+    }
+
+    const anchorNode = sel.anchorNode;
+    if (!anchorNode || !el.readerBody.contains(anchorNode)) return;
+
+    const paragraphEl = (anchorNode.nodeType === 1 ? anchorNode : anchorNode.parentElement)?.closest('.article-paragraph');
+    const paragraphText = paragraphEl ? (paragraphEl.dataset.rawPara || paragraphEl.textContent.trim()) : rawText;
+    const contextSentence = extractSurroundingSentence(sel, paragraphText);
+
+    const range = sel.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+
+    await triggerTranslationForText(rawText, contextSentence, rect);
   }
 
   function renderInspectorPanel(data) {
@@ -1223,23 +1306,35 @@
       });
     });
 
-    // Text selection (Anti-white / 反白) listeners on reading body
-    el.readerBody.addEventListener('mouseup', () => {
-      setTimeout(handleArticleTextSelection, 20);
-    });
-    el.readerBody.addEventListener('keyup', () => {
-      setTimeout(handleArticleTextSelection, 20);
-    });
+    // Text selection (Anti-white / 反白) listeners on reading body (Desktop + iPad/iOS Touch)
+    let selectionDebounceTimer = null;
+    const scheduleSelectionCheck = (delay = 140) => {
+      if (selectionDebounceTimer) clearTimeout(selectionDebounceTimer);
+      selectionDebounceTimer = setTimeout(handleArticleTextSelection, delay);
+    };
 
-    // Hide popover when clicking outside
-    document.addEventListener('mousedown', (e) => {
+    el.readerBody.addEventListener('mouseup', () => scheduleSelectionCheck(30));
+    el.readerBody.addEventListener('keyup', () => scheduleSelectionCheck(30));
+    el.readerBody.addEventListener('touchend', () => scheduleSelectionCheck(180), { passive: true });
+    document.addEventListener('selectionchange', () => scheduleSelectionCheck(260));
+
+    // Hide popover when clicking/tapping outside
+    const handleOutsidePointer = (e) => {
       if (
         el.popover.classList.contains('visible') &&
-        !el.popover.contains(e.target)
+        !el.popover.contains(e.target) &&
+        !e.target.closest('.fr-word') &&
+        !e.target.closest('.hl-mark') &&
+        !e.target.closest('.para-translate-btn')
       ) {
-        hidePopover();
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed) {
+          hidePopover();
+        }
       }
-    });
+    };
+    document.addEventListener('mousedown', handleOutsidePointer);
+    document.addEventListener('touchstart', handleOutsidePointer, { passive: true });
 
     // Swatch color picker inside Popover
     el.swatchBtns.forEach(btn => {
