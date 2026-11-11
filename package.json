@@ -1,0 +1,18 @@
+{
+  "name": "atelier-de-lecture",
+  "version": "1.0.0",
+  "description": "L'Atelier de Lecture — 法式羊皮紙沉浸式文章閱讀與反白翻譯學習系統",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "french",
+    "reading",
+    "translation",
+    "vocabulary",
+    "flashcards"
+  ],
+  "license": "MIT"
+}

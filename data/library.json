@@ -1,0 +1,188 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-11-11T08:30:00.000Z",
+  "settings": {
+    "theme": "warm-paper",
+    "fontSize": 20,
+    "lineHeight": 1.85,
+    "columnWidth": 720,
+    "githubRepo": "dhang0317/my-project",
+    "githubBranch": "main",
+    "autoSync": true
+  },
+  "articles": [
+    {
+      "id": "art-petit-prince",
+      "title": "Le Petit Prince — Chapitre XXI (Extrait)",
+      "subtitle": "Antoine de Saint-Exupéry · 經典文學節錄",
+      "category": "文學經典",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Le_Petit_Prince",
+      "createdAt": "2026-11-11T08:00:00.000Z",
+      "progress": 35,
+      "content": "C'est alors qu'apparut le renard :\n\n« Bonjour », dit le renard.\n\n« Bonjour », répondit poliment le petit prince, qui se retourna mais ne vit rien.\n\n« Je suis là, dit la voix, sous le pommier... »\n\n« Qui es-tu ? dit le petit prince. Tu es bien joli... »\n\n« Je suis un renard », dit le renard.\n\n« Viens jouer avec moi, lui proposa le petit prince. Je suis tellement triste... »\n\n« Je ne puis pas jouer avec toi, dit le renard. Je ne suis pas apprivoisé. »\n\n« Ah ! pardon », fit le petit prince. Mais, après réflexion, il ajouta : « Qu'est-ce que signifie \"apprivoiser\" ? »\n\n« C'est une chose trop oubliée, dit le renard. Ça signifie \"créer des liens...\" »\n\n« Créer des liens ? »\n\n« Bien sûr, dit le renard. Tu n'es encore pour moi qu'un petit garçon tout semblable à cent mille petits garçons. Et je n'ai pas besoin de toi. Et tu n'as pas besoin de moi non plus. Je ne suis pour toi qu'un renard semblable à cent mille renards. Mais, si tu m'apprivoises, nous aurons besoin l'un de l'autre. Tu seras pour moi unique au monde. Je serai pour toi unique au monde... »\n\n« On ne connaît que les choses que l'on apprivoise, dit le renard. Les hommes n'ont plus le temps de rien connaître. Ils achètent des choses toutes faites chez les marchands. Mais comme il n'existe point de marchands d'amis, les hommes n'ont plus d'amis. Si tu veux un ami, apprivoise-moi ! »\n\n« Voici mon secret. Il est très simple : on ne voit bien qu'avec le cœur. L'essentiel est invisible pour les yeux. »",
+      "highlights": [
+        {
+          "id": "hl-1",
+          "text": "apprivoisé",
+          "lemma": "apprivoiser",
+          "pos": "動詞 (過去分詞 / 形容詞)",
+          "translation": "被馴養的、被馴服的",
+          "note": "源自動詞 apprivoiser（馴養、建立親密關係），是《小王子》全書最核心的哲學詞彙。",
+          "color": "amber",
+          "context": "Je ne suis pas apprivoisé."
+        },
+        {
+          "id": "hl-2",
+          "text": "créer des liens",
+          "lemma": "créer + lien",
+          "pos": "動詞片語",
+          "translation": "建立連結、產生羈絆",
+          "note": "créer（創造、建立）+ des liens（關係、紐帶的複數）。",
+          "color": "burgundy",
+          "context": "Ça signifie \"créer des liens...\""
+        },
+        {
+          "id": "hl-3",
+          "text": "L'essentiel est invisible pour les yeux.",
+          "lemma": "essentiel / invisible",
+          "pos": "經典名句",
+          "translation": "真正重要的事物，用眼睛是看不見的。",
+          "note": "on ne voit bien qu'avec le cœur (ne ... que 表示「只有...才...」：只有用心才能看清)。",
+          "color": "sage",
+          "context": "Voici mon secret. Il est très simple : on ne voit bien qu'avec le cœur. L'essentiel est invisible pour les yeux."
+        }
+      ]
+    },
+    {
+      "id": "art-cafe-parisien",
+      "title": "L'Art de Vivre dans les Cafés Parisiens",
+      "subtitle": "Chronique Culturelle · 巴黎咖啡館的生活藝術",
+      "category": "文化生活",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Caf%C3%A9_(%C3%A9tablissement)",
+      "createdAt": "2026-11-11T08:10:00.000Z",
+      "progress": 10,
+      "content": "À Paris, le café n'est pas seulement un lieu où l'on boit un expresso rapide avant d'aller travailler. C'est une véritable institution sociale, un théâtre quotidien et un refuge pour l'esprit.\n\nDès le matin, les terrasses s'animent. Les serveurs, vêtus de leur tablier traditionnel, circulent avec une agilité remarquable entre les petites tables rondes. On y commande un « café crème » accompagné d'un croissant doré et croustillant, tout en feuilletant le journal du jour.\n\nDepuis le XVIIIe siècle, les écrivains, les philosophes et les artistes ont choisi les cafés de Saint-Germain-des-Prés et de Montparnasse comme deuxième maison. Jean-Paul Sartre et Simone de Beauvoir passaient de longues heures au Café de Flore pour écrire, débattre et observer le monde qui défilait devant eux.\n\nAujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné de la vie moderne. Que l'on soit seul avec un roman ou entouré d'amis à l'heure de l'apéritif, le café parisien demeure le symbole vivant de la convivialité française.",
+      "highlights": [
+        {
+          "id": "hl-4",
+          "text": "croustillant",
+          "lemma": "croustillant",
+          "pos": "形容詞 (陽性單數)",
+          "translation": "酥脆的、香脆的",
+          "note": "常用於形容可頌 (croissant) 或法棍麵包 (baguette) 外皮酥脆的口感。陰性為 croustillante。",
+          "color": "amber",
+          "context": "On y commande un « café crème » accompagné d'un croissant doré et croustillant, tout en feuilletant le journal du jour."
+        },
+        {
+          "id": "hl-5",
+          "text": "feuilletant",
+          "lemma": "feuilleter",
+          "pos": "動詞 (現在分詞 / 副動詞)",
+          "translation": "翻閱、隨手瀏覽",
+          "note": "源自 feuille（樹葉、紙張），tout en feuilletant 表示「一邊翻閱著...」。",
+          "color": "slate",
+          "context": "On y commande un « café crème » accompagné d'un croissant doré et croustillant, tout en feuilletant le journal du jour."
+        }
+      ]
+    },
+    {
+      "id": "art-tech-climat",
+      "title": "La Transition Écologique et l'Innovation Urbaine en France",
+      "subtitle": "Actualités & Société · 法國城市生態轉型報導",
+      "category": "新聞時事",
+      "sourceUrl": "https://fr.wikipedia.org/wiki/Transition_%C3%A9cologique",
+      "createdAt": "2026-11-11T08:20:00.000Z",
+      "progress": 0,
+      "content": "Face au changement climatique, les grandes métropoles françaises transforment profondément leur urbanisme. De Lyon à Bordeaux, en passant par Strasbourg et Paris, les municipalités multiplient les initiatives pour réduire les émissions de carbone et améliorer la qualité de vie des habitants.\n\nLa végétalisation des espaces publics figure au cœur de cette stratégie. Des cours d'écoles autrefois bitumées deviennent de véritables « oasis de fraîcheur » plantées d'arbres capables de résister aux épisodes de canicule estivale. Parallèlement, le développement des pistes cyclables a provoqué un essor spectaculaire de l'usage du vélo pour les trajets quotidiens.\n\nToutefois, ces transformations soulèvent aussi des débats importants concernant le logement, les transports en commun et l'équilibre économique entre le centre-ville et la périphérie. Les urbanistes soulignent que la réussite de cette transition dépendra de la participation active des citoyens.",
+      "highlights": [
+        {
+          "id": "hl-6",
+          "text": "canicule",
+          "lemma": "canicule",
+          "pos": "陰性名詞 (n.f.)",
+          "translation": "酷熱、熱浪",
+          "note": "法國夏季新聞極高頻字彙：un épisode de canicule（一波熱浪）。",
+          "color": "burgundy",
+          "context": "Des cours d'écoles autrefois bitumées deviennent de véritables « oasis de fraîcheur » plantées d'arbres capables de résister aux épisodes de canicule estivale."
+        }
+      ]
+    }
+  ],
+  "vocabulary": [
+    {
+      "id": "voc-1",
+      "word": "apprivoisé",
+      "lemma": "apprivoiser",
+      "pos": "動詞 (過去分詞 / 形容詞)",
+      "translation": "被馴養的、被馴服的",
+      "grammarNote": "第一組規則動詞 apprivoiser 的過去分詞；在句中作形容詞或搭配 être 構成被動狀態。",
+      "contextSentence": "Je ne suis pas apprivoisé.",
+      "contextTranslation": "我還沒有被馴養。",
+      "articleId": "art-petit-prince",
+      "articleTitle": "Le Petit Prince — Chapitre XXI",
+      "color": "amber",
+      "mastery": 1,
+      "createdAt": "2026-11-11T08:05:00.000Z"
+    },
+    {
+      "id": "voc-2",
+      "word": "créer des liens",
+      "lemma": "créer + lien",
+      "pos": "動詞片語",
+      "translation": "建立連結、產生羈絆",
+      "grammarNote": "créer (v.t. 創造) + des (不定冠詞複數) + liens (n.m.pl. 關係、紐帶)。",
+      "contextSentence": "Ça signifie « créer des liens... »",
+      "contextTranslation": "這意思是「建立羈絆／連結...」",
+      "articleId": "art-petit-prince",
+      "articleTitle": "Le Petit Prince — Chapitre XXI",
+      "color": "burgundy",
+      "mastery": 2,
+      "createdAt": "2026-11-11T08:06:00.000Z"
+    },
+    {
+      "id": "voc-3",
+      "word": "croustillant",
+      "lemma": "croustillant",
+      "pos": "形容詞 (adj.)",
+      "translation": "酥脆的、香脆的",
+      "grammarNote": "陽性單數 croustillant，陰性單數 croustillante，源自動詞 croustiller（咬起來嘎吱作響）。",
+      "contextSentence": "On y commande un « café crème » accompagné d'un croissant doré et croustillant.",
+      "contextTranslation": "人們在那裡點一杯牛奶咖啡，配上一塊金黃酥脆的可頌。",
+      "articleId": "art-cafe-parisien",
+      "articleTitle": "L'Art de Vivre dans les Cafés Parisiens",
+      "color": "amber",
+      "mastery": 0,
+      "createdAt": "2026-11-11T08:12:00.000Z"
+    },
+    {
+      "id": "voc-4",
+      "word": "feuilletant",
+      "lemma": "feuilleter",
+      "pos": "動詞 (現在分詞)",
+      "translation": "翻閱、隨手瀏覽",
+      "grammarNote": "tout en + 現在分詞 (-ant) 構成副動詞結構 (Gérondif)，表示「同時正在進行...」。",
+      "contextSentence": "tout en feuilletant le journal du jour.",
+      "contextTranslation": "一邊隨手翻閱著當天的報紙。",
+      "articleId": "art-cafe-parisien",
+      "articleTitle": "L'Art de Vivre dans les Cafés Parisiens",
+      "color": "slate",
+      "mastery": 0,
+      "createdAt": "2026-11-11T08:13:00.000Z"
+    },
+    {
+      "id": "voc-5",
+      "word": "canicule",
+      "lemma": "canicule",
+      "pos": "陰性名詞 (n.f.)",
+      "translation": "酷熱、熱浪",
+      "grammarNote": "la canicule (n.f.)，常搭配形容詞 estivale (夏季的)。",
+      "contextSentence": "Des arbres capables de résister aux épisodes de canicule estivale.",
+      "contextTranslation": "能夠抵禦夏季熱浪侵襲的樹木。",
+      "articleId": "art-tech-climat",
+      "articleTitle": "La Transition Écologique et l'Innovation Urbaine en France",
+      "color": "burgundy",
+      "mastery": 0,
+      "createdAt": "2026-11-11T08:21:00.000Z"
+    }
+  ]
+}
