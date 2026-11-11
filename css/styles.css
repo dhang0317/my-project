@@ -1,47 +1,32 @@
-/* ==========================================================================
-   法式羊皮紙極簡閱讀器 (Editorial Warm Paper — iPad & Mobile First)
-   ========================================================================== */
+/* 極簡純淨風格 (無圖示、無雜訊、底部絕對固定) */
 
 :root {
-  --bg-page: #F6F1E7;
-  --bg-sheet: #FCF9F4;
+  --bg-page: #F7F5F0;
+  --bg-card: #FFFFFF;
   --bg-dock: #FFFFFF;
-  --bg-subtle: #EFE8DA;
+  --bg-subtle: #EEEEEE;
 
-  --text-main: #1E1A17;
-  --text-sub: #5A5147;
-  --text-muted: #8A7F72;
+  --text-primary: #1A1A1A;
+  --text-secondary: #555555;
+  --text-muted: #888888;
 
-  --accent-burgundy: #802433;
-  --accent-navy: #1B3864;
-  --border-color: #DFD5C3;
-
-  --hl-bg: rgba(235, 180, 68, 0.42);
-  --hl-border: #D4971B;
-
-  --font-fr: 'Cormorant Garamond', 'Georgia', 'Noto Serif TC', serif;
-  --font-zh: 'Noto Serif TC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-
-  --reader-size: 23px;
+  --accent: #8A2534;
+  --border: #DCD8D0;
+  --font-size: 24px;
 }
 
 [data-theme="dark"] {
-  --bg-page: #141413;
-  --bg-sheet: #1E1D1B;
-  --bg-dock: #272522;
-  --bg-subtle: #2D2A26;
+  --bg-page: #121212;
+  --bg-card: #1E1E1E;
+  --bg-dock: #1A1A1A;
+  --bg-subtle: #2C2C2C;
 
-  --text-main: #EDE6D8;
-  --text-sub: #B8AFA0;
-  --text-muted: #7F776B;
+  --text-primary: #E6E6E6;
+  --text-secondary: #AAAAAA;
+  --text-muted: #666666;
 
-  --accent-burgundy: #E07A8A;
-  --accent-navy: #73A6E5;
-  --border-color: #38342F;
-
-  --hl-bg: rgba(217, 167, 74, 0.34);
-  --hl-border: #D9A74A;
+  --accent: #E07080;
+  --border: #333333;
 }
 
 *, *::before, *::after {
@@ -53,383 +38,249 @@
 html, body {
   min-height: 100%;
   background-color: var(--bg-page);
-  color: var(--text-main);
-  font-family: var(--font-ui);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 頂部極簡導覽列 */
-.simple-header {
+/* 頂部導覽列 */
+.top-bar {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--bg-sheet);
-  border-bottom: 1px solid var(--border-color);
-  padding: 10px 18px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.header-left, .header-right {
+.bar-left, .bar-right {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
-.logo-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background-color: var(--accent-burgundy);
-  color: #FFF;
-  font-family: var(--font-fr);
-  font-weight: 700;
-  font-size: 17px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.article-picker {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-subtle);
-  color: var(--text-main);
+.select-box {
+  padding: 7px 12px;
   font-size: 14px;
-  font-weight: 600;
-  max-width: 260px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  max-width: 240px;
 }
 
 .btn {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-sheet);
-  color: var(--text-main);
+  padding: 7px 13px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn-main {
+  background-color: var(--accent);
+  color: #FFFFFF;
+  border-color: var(--accent);
+}
+
+.btn:active {
+  opacity: 0.85;
+}
+
+/* 閱讀主體（純法文、無任何中文字穿插） */
+.reading-area {
+  max-width: 760px;
+  margin: 20px auto 180px;
+  padding: 0 16px;
+}
+
+.reading-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 32px 28px 48px;
+}
+
+.article-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-content {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: var(--font-size);
+  line-height: 1.95;
+  color: var(--text-primary);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.para-block {
+  margin-bottom: 1.4em;
+}
+
+.fr-word {
+  display: inline;
+  padding: 1px 2px;
+  border-radius: 4px;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn:active {
-  transform: scale(0.97);
+.fr-word:hover,
+.fr-word:active {
+  background-color: rgba(138, 37, 52, 0.12);
 }
 
-.btn-primary {
-  background-color: var(--accent-burgundy);
-  color: #FFF;
-  border-color: var(--accent-burgundy);
-}
-
-.btn-navy {
-  background-color: var(--accent-navy);
-  color: #FFF;
-  border-color: var(--accent-navy);
-}
-
-.btn-icon {
-  min-width: 38px;
-  padding: 8px 10px;
-}
-
-/* 中央單欄羊皮紙閱讀區 */
-.reader-main {
-  max-width: 780px;
-  margin: 22px auto 190px;
-  padding: 0 16px;
-}
-
-.paper-sheet {
-  background-color: var(--bg-sheet);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  padding: 32px 28px 44px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-}
-
-.sheet-header {
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 18px;
-  margin-bottom: 24px;
-}
-
-.sheet-title {
-  font-family: var(--font-fr);
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 10px;
-}
-
-.sheet-hint {
-  font-size: 13.5px;
-  color: var(--text-sub);
-  background-color: var(--bg-subtle);
-  padding: 9px 13px;
-  border-radius: 8px;
-  border-left: 4px solid var(--accent-burgundy);
-}
-
-/* 法文段落與可點擊單字 */
-.sheet-body {
-  font-family: var(--font-fr);
-  font-size: var(--reader-size);
-  line-height: 1.9;
-  color: var(--text-main);
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-.fr-para {
-  margin-bottom: 1.3em;
-}
-
-.fr-word {
-  display: inline;
-  padding: 2px 3px;
-  margin: 0 -1px;
-  border-radius: 5px;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(128, 36, 51, 0.25);
-  transition: background-color 0.12s ease;
-}
-
-.fr-word:hover {
-  background-color: rgba(27, 56, 100, 0.12);
-}
-
-.fr-word.selected-word {
-  background-color: var(--accent-burgundy);
+.fr-word.active-word {
+  background-color: var(--accent);
   color: #FFFFFF !important;
-  font-weight: 600;
+  border-radius: 4px;
 }
 
-.fr-word.saved-hl {
-  background-color: var(--hl-bg);
-  border-bottom: 2px solid var(--hl-border);
+.article-content::selection,
+.para-block::selection,
+.fr-word::selection {
+  background-color: rgba(138, 37, 52, 0.28);
+  color: var(--text-primary);
 }
 
-.para-btn {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 10px;
-  font-family: var(--font-ui);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent-navy);
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  border-radius: 99px;
-  cursor: pointer;
-  vertical-align: middle;
-  touch-action: manipulation;
-}
-
-/* 雙語整段翻譯展開盒 */
-.para-zh-box {
-  margin-top: 8px;
-  padding: 10px 14px;
-  background-color: var(--bg-subtle);
-  border-left: 3px solid var(--accent-navy);
-  border-radius: 6px;
-  font-family: var(--font-zh);
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--text-main);
-}
-
-/* 底部固定翻譯抽屜 (Bottom Translation Dock) */
-.translation-dock {
+/* 穩定固定於螢幕最下方 (Bottom Dock) */
+.fixed-bottom-bar {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 500;
+  z-index: 1000;
   background-color: var(--bg-dock);
-  border-top: 2px solid var(--accent-burgundy);
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.14);
-  padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-top: 2px solid var(--accent);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px));
 }
 
-.dock-inner {
-  max-width: 780px;
+.dock-container {
+  max-width: 760px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
-.dock-main {
+.dock-left {
   flex: 1;
-  min-width: 240px;
+  min-width: 0;
 }
 
-.dock-top-row {
+.dock-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
   margin-bottom: 4px;
-}
-
-.dock-fr {
-  font-family: var(--font-fr);
-  font-size: 23px;
-  font-weight: 700;
-  color: var(--accent-burgundy);
-}
-
-.dock-badge {
-  font-size: 12.5px;
-  font-weight: 600;
-  background-color: var(--bg-subtle);
-  color: var(--accent-navy);
-  padding: 2px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-}
-
-.dock-pos {
-  font-size: 12.5px;
-  color: var(--text-sub);
-}
-
-.dock-zh {
-  font-family: var(--font-zh);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1.45;
-}
-
-.dock-note {
-  font-size: 13px;
-  color: var(--text-sub);
-  margin-top: 4px;
-}
-
-.dock-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
 }
 
-/* 彈窗 Modal */
-.modal-backdrop {
+.dock-fr-word {
+  font-family: 'Georgia', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dock-tag {
+  font-size: 12px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.dock-subtag {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dock-zh-meaning {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* 彈窗 */
+.modal-layer {
   position: fixed;
   inset: 0;
-  z-index: 900;
-  background-color: rgba(0, 0, 0, 0.55);
+  z-index: 1100;
+  background-color: rgba(0, 0, 0, 0.5);
   display: none;
   align-items: center;
   justify-content: center;
   padding: 16px;
 }
 
-.modal-backdrop.open {
+.modal-layer.open {
   display: flex;
 }
 
-.modal-box {
-  background-color: var(--bg-sheet);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
+.modal-card {
+  background-color: var(--bg-card);
+  border-radius: 8px;
   width: 100%;
-  max-width: 560px;
-  max-height: 88vh;
-  overflow-y: auto;
-  padding: 22px;
+  max-width: 520px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
-.modal-head {
+.modal-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
-.upload-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.file-btn {
-  display: inline-block;
-  padding: 8px 14px;
-  background-color: var(--bg-subtle);
-  border: 1px dashed var(--accent-burgundy);
-  border-radius: 8px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--accent-burgundy);
-  cursor: pointer;
-}
-
-.text-input, .text-area {
+.input-text, .input-area {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-dock);
-  color: var(--text-main);
+  padding: 9px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
   font-size: 15px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.text-area {
-  min-height: 150px;
-  font-family: var(--font-fr);
-  font-size: 18px;
-}
-
-.url-fetch-box {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.modal-foot {
-  margin-top: 16px;
-}
-
-.vocab-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.vocab-item {
-  padding: 12px;
-  border-radius: 8px;
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
+.input-area {
+  min-height: 160px;
+  font-family: 'Georgia', serif;
+  font-size: 17px;
 }
 
 @media (max-width: 600px) {
-  .paper-sheet {
-    padding: 20px 16px 32px;
+  .reading-card {
+    padding: 20px 16px 36px;
   }
-  .sheet-title {
-    font-size: 25px;
+  .article-title {
+    font-size: 24px;
   }
 }

@@ -1,127 +1,69 @@
 <!DOCTYPE html>
-<html lang="zh-Hant" data-theme="warm-paper">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>法文閱讀翻譯器 — 上傳文章 · 點擊或反白即看中文</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Noto+Serif+TC:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <title>法文閱讀器</title>
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 </head>
 <body>
 
-  <!-- 極簡頂部控制列 -->
-  <header class="simple-header">
-    <div class="header-left">
-      <span class="logo-badge">FR</span>
-      <select id="article-select" class="article-picker" aria-label="選擇法文文章">
-        <!-- 自動載入文章清單 -->
-      </select>
+  <!-- 極簡頂部工具列（純文字按鈕，無任何 emoji 或圖示） -->
+  <header class="top-bar">
+    <div class="bar-left">
+      <select id="article-select" class="select-box" aria-label="選擇文章"></select>
     </div>
-
-    <div class="header-right">
-      <button id="open-upload-btn" type="button" class="btn btn-primary">＋ 上傳 / 貼上法文</button>
-      <button id="open-vocab-btn" type="button" class="btn">⭐ 生字本 (<span id="vocab-count">0</span>)</button>
-      <button id="font-size-btn" type="button" class="btn btn-icon" title="放大/調整字體">A+</button>
-      <button id="theme-btn" type="button" class="btn btn-icon" title="深色模式">🌙</button>
+    <div class="bar-right">
+      <button id="open-upload-btn" type="button" class="btn btn-main">上傳文章</button>
+      <button id="font-btn" type="button" class="btn">字級</button>
+      <button id="theme-btn" type="button" class="btn">深色</button>
     </div>
   </header>
 
-  <!-- 純淨單欄法文閱讀區 -->
-  <main class="reader-main">
-    <article class="paper-sheet">
-      <header class="sheet-header">
-        <h1 id="article-title" class="sheet-title">Le Petit Prince</h1>
-        <p class="sheet-hint">
-          👆 <strong>iPad / 手機直接「點一下單字」或「反白選取文字」</strong>，底部即刻顯示中文翻譯！（點「整句中譯」可看全段翻譯）
-        </p>
-      </header>
-
-      <div id="article-body" class="sheet-body">
-        <!-- 法文段落與單字顯示於此 -->
-      </div>
+  <!-- 純淨法文閱讀主體（100% 只有法文，無任何中文提示與多餘按鈕） -->
+  <main class="reading-area">
+    <article class="reading-card">
+      <h1 id="article-title" class="article-title"></h1>
+      <div id="article-body" class="article-content"></div>
     </article>
   </main>
 
-  <!-- 底部固定翻譯抽屜 (Bottom Translation Dock — iPad 絕對不遮擋、100% 穩定顯示) -->
-  <aside id="translation-dock" class="translation-dock" aria-live="polite">
-    <div class="dock-inner">
-      <div class="dock-main">
-        <div class="dock-top-row">
-          <span id="dock-fr-text" class="dock-fr">請點選或反白上方任一法文單字／句子</span>
-          <span id="dock-lemma-badge" class="dock-badge" style="display: none;">原形: -</span>
-          <span id="dock-pos-badge" class="dock-pos" style="display: none;"></span>
+  <!-- 穩定固定在螢幕最下方（永遠置底、不漂浮、不晃動、不被 iPad 選單遮擋） -->
+  <footer id="bottom-dock" class="fixed-bottom-bar">
+    <div class="dock-container">
+      <div class="dock-left">
+        <div class="dock-row">
+          <span id="dock-fr" class="dock-fr-word">選取法文文字</span>
+          <span id="dock-lemma" class="dock-tag" style="display: none;"></span>
+          <span id="dock-pos" class="dock-subtag" style="display: none;"></span>
         </div>
-        <div id="dock-zh-text" class="dock-zh">
-          點一下文章中的法文單字，或用手指長按反白一段文字，這裡會立即顯示繁體中文翻譯與動詞原形。
-        </div>
-        <div id="dock-extra-note" class="dock-note" style="display: none;"></div>
+        <div id="dock-zh" class="dock-zh-meaning">點擊單字或反白文字即在此顯示翻譯</div>
       </div>
-
-      <div class="dock-actions">
-        <button id="translate-selection-btn" type="button" class="btn btn-navy" style="display: none;">
-          🔍 翻譯目前反白文字
-        </button>
-        <button id="save-word-btn" type="button" class="btn btn-primary" style="display: none;">
-          🖍️ 標記螢光筆＋存生字
-        </button>
+      <div class="dock-right">
+        <button id="dock-translate-btn" type="button" class="btn btn-main" style="display: none;">翻譯選取</button>
       </div>
     </div>
-  </aside>
+  </footer>
 
-  <!-- 彈窗 1：上傳 / 貼上法文文章 / 網址抓取 -->
-  <div id="upload-modal" class="modal-backdrop">
-    <div class="modal-box">
-      <div class="modal-head">
-        <h2>＋ 上傳或貼上法文文章</h2>
-        <button id="close-upload-btn" type="button" class="btn btn-icon">✕</button>
+  <!-- 上傳文章彈窗（純文字極簡設計） -->
+  <div id="upload-modal" class="modal-layer">
+    <div class="modal-card">
+      <div class="modal-top">
+        <h3>上傳法文文章</h3>
+        <button id="close-upload-btn" type="button" class="btn">關閉</button>
       </div>
-
-      <div class="modal-body">
-        <div class="upload-row">
-          <label class="file-btn">
-            📄 選擇 .txt / .md 檔案上傳
-            <input id="file-input" type="file" accept=".txt,.md,text/plain" hidden />
-          </label>
-          <span style="font-size: 13px; color: var(--text-muted);">或直接在下方貼上法文內容：</span>
+      <div class="modal-content">
+        <div style="margin-bottom: 12px;">
+          <input id="file-input" type="file" accept=".txt,.md,text/plain" style="margin-bottom: 8px; font-size: 14px;" />
         </div>
-
-        <input id="input-title" type="text" class="text-input" placeholder="文章標題（選填，例如：法國新聞、小王子）" />
-        <textarea id="input-content" class="text-area" placeholder="在此貼上法文文章內文..."></textarea>
-
-        <div class="url-fetch-box">
-          <input id="input-url" type="url" class="text-input" placeholder="或輸入法文維基/文章網址 (https://...)" style="margin-bottom:0;" />
-          <button id="fetch-url-btn" type="button" class="btn btn-navy">抓取網址</button>
-        </div>
-        <div id="url-status" style="font-size: 13px; color: var(--accent-burgundy); margin-top: 6px;"></div>
-
-        <div class="modal-foot">
-          <button id="save-article-btn" type="button" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">
-            ✓ 開始閱讀這篇法文文章
-          </button>
-        </div>
+        <input id="input-title" type="text" class="input-text" placeholder="文章標題（選填）" />
+        <textarea id="input-content" class="input-area" placeholder="在此貼上法文內文..."></textarea>
+        <button id="save-article-btn" type="button" class="btn btn-main" style="width: 100%; padding: 12px; margin-top: 10px;">確認儲存並開始閱讀</button>
       </div>
     </div>
   </div>
 
-  <!-- 彈窗 2：我的生字本與匯出 -->
-  <div id="vocab-modal" class="modal-backdrop">
-    <div class="modal-box">
-      <div class="modal-head">
-        <h2>⭐ 我的法文生字本</h2>
-        <div style="display: flex; gap: 8px;">
-          <button id="export-csv-btn" type="button" class="btn">⬇ 匯出 CSV</button>
-          <button id="close-vocab-btn" type="button" class="btn btn-icon">✕</button>
-        </div>
-      </div>
-      <div id="vocab-list" class="vocab-list">
-        <!-- 生字列表 -->
-      </div>
-    </div>
-  </div>
-
-  <script src="js/french-analyzer.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/french-analyzer.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
