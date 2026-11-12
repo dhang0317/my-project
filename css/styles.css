@@ -1,4 +1,4 @@
-/* 極簡純淨風格 (無圖示、無雜訊、底部絕對固定) */
+/* 極簡純淨風格 (無圖示、無雜訊、底部絕對固定、支援右側中文對照) */
 
 :root {
   --bg-page: #F7F5F0;
@@ -12,7 +12,8 @@
 
   --accent: #8A2534;
   --border: #DCD8D0;
-  --font-size: 24px;
+  --font-size: 23px;
+  --trans-size: 18px;
 }
 
 [data-theme="dark"] {
@@ -95,30 +96,59 @@ html, body {
   opacity: 0.85;
 }
 
-/* 閱讀主體（純法文、無任何中文字穿插） */
+/* 閱讀主體：支援雙欄（左法右中）與單欄自適應切換 */
 .reading-area {
-  max-width: 760px;
+  max-width: 1400px;
   margin: 20px auto 180px;
   padding: 0 16px;
 }
 
-.reading-card {
+.dual-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.dual-columns.show-translation {
+  grid-template-columns: 1fr 1fr;
+}
+
+.column-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 32px 28px 48px;
+  padding: 30px 26px 44px;
+  min-height: 480px;
+}
+
+.col-translation {
+  display: none;
+  background-color: var(--bg-card);
+  border-left: 3px solid var(--accent);
+}
+
+.dual-columns.show-translation .col-translation {
+  display: block;
 }
 
 .article-title {
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1.25;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
 }
 
+.trans-header-title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 20px;
+  color: var(--text-secondary);
+}
+
+/* 左欄法文排版 */
 .article-content {
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: var(--font-size);
@@ -128,8 +158,29 @@ html, body {
   user-select: text;
 }
 
+/* 右欄中文對照排版 */
+.trans-content {
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Serif TC", serif;
+  font-size: var(--trans-size);
+  line-height: 2.05;
+  color: var(--text-secondary);
+}
+
 .para-block {
-  margin-bottom: 1.4em;
+  margin-bottom: 1.45em;
+  min-height: 2.2em;
+}
+
+.trans-para {
+  margin-bottom: 1.45em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  min-height: 2.2em;
+}
+
+.trans-para.hover-sync {
+  background-color: rgba(138, 37, 52, 0.08);
+  color: var(--text-primary);
 }
 
 .fr-word {
@@ -154,7 +205,8 @@ html, body {
 
 .article-content::selection,
 .para-block::selection,
-.fr-word::selection {
+.fr-word::selection,
+.trans-content::selection {
   background-color: rgba(138, 37, 52, 0.28);
   color: var(--text-primary);
 }
@@ -173,7 +225,7 @@ html, body {
 }
 
 .dock-container {
-  max-width: 760px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -276,11 +328,12 @@ html, body {
   font-size: 17px;
 }
 
-@media (max-width: 600px) {
-  .reading-card {
-    padding: 20px 16px 36px;
+/* iPad 直向或螢幕窄於 900px 時自動堆疊 */
+@media (max-width: 900px) {
+  .dual-columns.show-translation {
+    grid-template-columns: 1fr;
   }
-  .article-title {
-    font-size: 24px;
+  .column-card {
+    padding: 22px 18px 36px;
   }
 }

@@ -4,28 +4,38 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>法文閱讀器</title>
-  <link rel="stylesheet" href="css/styles.css?v=4" />
+  <link rel="stylesheet" href="css/styles.css?v=6" />
 </head>
 <body>
 
-  <!-- 極簡頂部工具列（純文字按鈕，無任何 emoji 或圖示） -->
+  <!-- 極簡頂部工具列 -->
   <header class="top-bar">
     <div class="bar-left">
       <select id="article-select" class="select-box" aria-label="選擇文章"></select>
     </div>
     <div class="bar-right">
-      <button id="open-upload-btn" type="button" class="btn btn-main">上傳文章</button>
+      <button id="toggle-side-trans-btn" type="button" class="btn btn-main">右側中譯</button>
+      <button id="open-upload-btn" type="button" class="btn">上傳文章</button>
       <button id="font-btn" type="button" class="btn">字級</button>
       <button id="theme-btn" type="button" class="btn">深色</button>
     </div>
   </header>
 
-  <!-- 純淨法文閱讀主體（100% 只有法文，無任何中文提示與多餘按鈕） -->
+  <!-- 雙欄閱讀主體：左側法文原文，右側完整中文對照翻譯 -->
   <main class="reading-area">
-    <article class="reading-card">
-      <h1 id="article-title" class="article-title"></h1>
-      <div id="article-body" class="article-content"></div>
-    </article>
+    <div id="dual-layout" class="dual-columns show-translation">
+      <!-- 左欄：純淨法文原文 -->
+      <article class="column-card col-french">
+        <h1 id="article-title" class="article-title"></h1>
+        <div id="article-body" class="article-content"></div>
+      </article>
+
+      <!-- 右欄：文章完整中文翻譯對照 -->
+      <article id="trans-column" class="column-card col-translation">
+        <h2 id="trans-title" class="article-title trans-header-title">中文翻譯</h2>
+        <div id="article-translation" class="article-content trans-content"></div>
+      </article>
+    </div>
   </main>
 
   <!-- 穩定固定在螢幕最下方（永遠置底、不漂浮、不晃動、不被 iPad 選單遮擋） -->
@@ -63,7 +73,7 @@
     </div>
   </div>
 
-  <script src="js/french-analyzer.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/french-analyzer.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

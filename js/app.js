@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'french_clean_reader_v4';
+  const STORAGE_KEY = 'french_clean_reader_v6';
 
   const DEFAULT_ARTICLES = [
     {
@@ -31,7 +31,32 @@
 
 « Bien sûr, dit le renard. Tu n'es encore pour moi qu'un petit garçon tout semblable à cent mille petits garçons. Et je n'ai pas besoin de toi. Et tu n'as pas besoin de moi non plus. Je ne suis pour toi qu'un renard semblable à cent mille renards. Mais, si tu m'apprivoises, nous aurons besoin l'un de l'autre. Tu seras pour moi unique au monde. Je serai pour toi unique au monde... »
 
-« Voici mon secret. Il est très simple : on ne voit bien qu'avec le cœur. L'essentiel est invisible pour les yeux. »`
+« Voici mon secret. Il est très simple : on ne voit bien qu'avec le cœur. L'essentiel est invisible pour les yeux. »`,
+      translation: `就在這時，狐狸出現了：
+
+「你好」，狐狸說道。
+
+「你好」，小王子很有禮貌地回答，他轉過身來，卻什麼也沒看見。
+
+「我在這裡，」那個聲音說，「在蘋果樹下……」
+
+「你是誰？」小王子說。「你好漂亮……」
+
+「我是一隻狐狸」，狐狸說。
+
+「來陪我玩吧，」小王子向牠提議，「我好難過……」
+
+「我不能跟你一起玩，」狐狸說。「我還沒有被馴服。」
+
+「啊！對不起」，小王子說。但是，想了想之後，他又問道：「『馴服』是什麼意思？」
+
+「這是一件太常被遺忘的事了，」狐狸說。「意思就是『建立關係（羈絆）……』」
+
+「建立關係？」
+
+「當然，」狐狸說。「對我來說，你現在還只是一個小男孩，和千千萬萬個小男孩一模一樣。我不需要你，你也不需要我。對你而言，我只不過是一隻狐狸，和千千萬萬隻狐狸沒兩樣。但是，如果你馴服了我，我們就會彼此需要。對我來說，你就是世界上獨一無二的；對你來說，我也會是世界上獨一無二的……」
+
+「這就是我的秘密。非常簡單：只有用心才能看得清楚。真正重要的事物，用眼睛是看不見的。」`
     },
     {
       id: 'paris-cafe',
@@ -40,17 +65,26 @@
 
 Dès le matin, les terrasses s'animent. Les serveurs, vêtus de leur tablier traditionnel, circulent avec une agilité remarquable entre les petites tables rondes. On y commande un café crème accompagné d'un croissant doré et croustillant, tout en feuilletant le journal du jour.
 
-Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné de la vie moderne. Que l'on soit seul avec un roman ou entouré d'amis, le café parisien demeure le symbole vivant de la convivialité française.`
+Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné de la vie moderne. Que l'on soit seul avec un roman ou entouré d'amis, le café parisien demeure le symbole vivant de la convivialité française.`,
+      translation: `在巴黎，咖啡館不僅僅是人們上班前快速喝一杯濃縮咖啡的地方。它是名副其實的社會文化象徵、每日上演的人間劇場，也是靈魂的心靈避風港。
+
+清晨時分，露天咖啡座便熱鬧起來。身穿傳統黑白圍裙的服務生，身手矯健地穿梭在一張張小圓桌之間。人們點一杯鮮奶咖啡，配上一只金黃酥脆的可頌麵包，悠閒地翻閱著當天的日報。
+
+時至今日，坐在露天座位上依然能讓人放慢現代生活急促緊湊的步調。無論是獨自手捧一本小說，或是與三五好友歡聚，巴黎咖啡館始終是法國親切好客與生活品味的鮮活代表。`
     }
   ];
 
   let articles = loadArticles();
   let currentId = articles[0].id;
-  let currentFontSize = 24;
+  let currentFontSize = 23;
+  let showTranslation = true;
 
   const articleSelect = document.getElementById('article-select');
   const articleTitle = document.getElementById('article-title');
   const articleBody = document.getElementById('article-body');
+  const articleTranslation = document.getElementById('article-translation');
+  const dualLayout = document.getElementById('dual-layout');
+  const toggleSideTransBtn = document.getElementById('toggle-side-trans-btn');
 
   const dockFr = document.getElementById('dock-fr');
   const dockLemma = document.getElementById('dock-lemma');
@@ -104,8 +138,8 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     ).join('');
   }
 
-  // 渲染內文：自動識別「慣用字組／片語」（例如：Bien sûr, créer des liens, tout de suite）連成一組翻譯
-  function renderContent() {
+  // 渲染左側純法文 + 右側完整中文對照
+  async function renderContent() {
     const art = getCurrent();
     currentId = art.id;
     articleTitle.textContent = art.title;
@@ -119,16 +153,16 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
       .map(p => p.trim())
       .filter(Boolean);
 
-    articleBody.innerHTML = paragraphs.map(para => {
+    // 1. 渲染左側法文
+    articleBody.innerHTML = paragraphs.map((para, idx) => {
       let safe = escapeHtml(para);
       const placeholders = [];
 
-      // 先抓出常見字組 (Phrases/Idioms)
-      phrases.forEach((phrase, idx) => {
+      phrases.forEach((phrase, pIdx) => {
         const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const reg = new RegExp(`\\b(${escapedPhrase})\\b`, 'gi');
         if (reg.test(safe)) {
-          const token = `__PHRASE_${idx}__`;
+          const token = `__PHRASE_${pIdx}__`;
           safe = safe.replace(reg, (match) => {
             placeholders.push({
               token,
@@ -139,7 +173,6 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
         }
       });
 
-      // 其餘單字包裹成單詞單元
       safe = safe.replace(
         /([A-Za-zÀ-ÖØ-öø-ÿŒœÆæ]+(?:['’\-][A-Za-zÀ-ÖØ-öø-ÿŒœÆæ]+)*)/g,
         (match) => {
@@ -148,16 +181,65 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
         }
       );
 
-      // 還原字組
       for (const item of placeholders) {
         safe = safe.replace(item.token, item.html);
       }
 
-      return `<p class="para-block">${safe}</p>`;
+      return `<p class="para-block" data-para-idx="${idx}">${safe}</p>`;
     }).join('');
+
+    // 2. 渲染右側中文對照
+    if (art.translation) {
+      const transParas = art.translation.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+      articleTranslation.innerHTML = transParas.map((tp, idx) =>
+        `<p class="trans-para" data-para-idx="${idx}">${escapeHtml(tp)}</p>`
+      ).join('');
+    } else {
+      // 若為自訂上傳文章且尚未有中文，顯示載入狀態並非同步批次翻譯整篇
+      articleTranslation.innerHTML = paragraphs.map((_, idx) =>
+        `<p class="trans-para" data-para-idx="${idx}" id="trans-p-${idx}">翻譯生成中...</p>`
+      ).join('');
+
+      autoTranslateFullArticle(art, paragraphs);
+    }
   }
 
-  // 翻譯核心函數
+  // 自動非同步翻譯自訂文章為中文
+  async function autoTranslateFullArticle(art, paragraphs) {
+    const translatedList = [];
+    for (let i = 0; i < paragraphs.length; i++) {
+      const p = paragraphs[i];
+      let pZh = '';
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-TW&dt=t&q=${encodeURIComponent(p)}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data[0])) {
+            pZh = data[0].map(s => s[0] || '').join('');
+          }
+        }
+      } catch (_) {}
+
+      if (!pZh) {
+        try {
+          const mm = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(p)}&langpair=fr|zh-TW`);
+          const d = await mm.json();
+          pZh = d?.responseData?.translatedText || p;
+        } catch (_) {
+          pZh = p;
+        }
+      }
+
+      translatedList.push(pZh);
+      const targetEl = document.getElementById(`trans-p-${i}`);
+      if (targetEl) targetEl.textContent = pZh;
+    }
+    art.translation = translatedList.join('\n\n');
+    saveArticles();
+  }
+
+  // 底部置底列單字/片語/選取翻譯
   async function performTranslation(text) {
     const clean = (text || '').trim();
     if (!clean) return;
@@ -167,7 +249,7 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     dockLemma.style.display = 'none';
     dockPos.style.display = 'none';
 
-    // 本地詞法庫優先（零延遲）
+    // 本地詞彙庫優先（零延遲）
     if (window.FrenchAnalyzer) {
       const analysis = window.FrenchAnalyzer.analyzeSelection(clean, '');
       const morph = analysis.primaryMorph;
@@ -217,7 +299,21 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
 
   // 監聽事件
   function initEvents() {
-    // 1. 點擊法文單字
+    // 0. 切換右側中文翻譯欄開關
+    toggleSideTransBtn.addEventListener('click', () => {
+      showTranslation = !showTranslation;
+      if (showTranslation) {
+        dualLayout.classList.add('show-translation');
+        toggleSideTransBtn.classList.add('btn-main');
+        toggleSideTransBtn.textContent = '右側中譯';
+      } else {
+        dualLayout.classList.remove('show-translation');
+        toggleSideTransBtn.classList.remove('btn-main');
+        toggleSideTransBtn.textContent = '顯示中譯';
+      }
+    });
+
+    // 1. 點擊法文單字 / 字組
     articleBody.addEventListener('click', (e) => {
       const wEl = e.target.closest('.fr-word');
       if (!wEl) return;
@@ -232,6 +328,15 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
       articleBody.querySelectorAll('.fr-word.active-word').forEach(el => el.classList.remove('active-word'));
       wEl.classList.add('active-word');
       performTranslation(wEl.dataset.w || wEl.textContent);
+
+      // 高亮對應段落
+      const pEl = wEl.closest('.para-block');
+      if (pEl) {
+        const pIdx = pEl.dataset.paraIdx;
+        document.querySelectorAll('.trans-para.hover-sync').forEach(el => el.classList.remove('hover-sync'));
+        const matchTrans = document.querySelector(`.trans-para[data-para-idx="${pIdx}"]`);
+        if (matchTrans) matchTrans.classList.add('hover-sync');
+      }
     });
 
     // 2. 反白選取文字（支援 iPad 手指長按拉選與電腦選取）
