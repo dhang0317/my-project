@@ -85,6 +85,7 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
   const articleTranslation = document.getElementById('article-translation');
   const dualLayout = document.getElementById('dual-layout');
   const toggleSideTransBtn = document.getElementById('toggle-side-trans-btn');
+  const closeTransColBtn = document.getElementById('close-trans-col-btn');
 
   const dockFr = document.getElementById('dock-fr');
   const dockLemma = document.getElementById('dock-lemma');
@@ -100,7 +101,6 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
   const inputTitle = document.getElementById('input-title');
   const inputContent = document.getElementById('input-content');
 
-  const fontBtn = document.getElementById('font-btn');
   const themeBtn = document.getElementById('theme-btn');
 
   function loadArticles() {
@@ -301,19 +301,29 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
 
   // 監聽事件
   function initEvents() {
-    // 0. 切換右側中文翻譯欄開關
-    toggleSideTransBtn.addEventListener('click', () => {
-      showTranslation = !showTranslation;
+    function setTranslationVisible(visible) {
+      showTranslation = visible;
       if (showTranslation) {
         dualLayout.classList.add('show-translation');
         toggleSideTransBtn.classList.add('btn-main');
-        toggleSideTransBtn.textContent = '右側中譯';
+        toggleSideTransBtn.textContent = '收起中譯';
       } else {
         dualLayout.classList.remove('show-translation');
         toggleSideTransBtn.classList.remove('btn-main');
         toggleSideTransBtn.textContent = '顯示中譯';
       }
+    }
+
+    // 0. 切換右側中文翻譯欄開關（頂部按鈕 + 右欄右上角收起按鈕）
+    toggleSideTransBtn.addEventListener('click', () => {
+      setTranslationVisible(!showTranslation);
     });
+
+    if (closeTransColBtn) {
+      closeTransColBtn.addEventListener('click', () => {
+        setTranslationVisible(false);
+      });
+    }
 
     // 1. 點擊法文單字 / 字組
     articleBody.addEventListener('click', (e) => {
@@ -383,13 +393,7 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
       renderContent();
     });
 
-    // 4. 字級切換
-    fontBtn.addEventListener('click', () => {
-      currentFontSize = currentFontSize >= 30 ? 20 : currentFontSize + 2;
-      document.documentElement.style.setProperty('--font-size', `${currentFontSize}px`);
-    });
-
-    // 5. 深色切換
+    // 4. 深色切換
     themeBtn.addEventListener('click', () => {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');

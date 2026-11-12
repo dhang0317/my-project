@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>法文閱讀器</title>
-  <link rel="stylesheet" href="css/styles.css?v=7" />
+  <link rel="stylesheet" href="css/styles.css?v=8" />
 </head>
 <body>
 
@@ -14,14 +14,13 @@
       <select id="article-select" class="select-box" aria-label="選擇文章"></select>
     </div>
     <div class="bar-right">
-      <button id="toggle-side-trans-btn" type="button" class="btn btn-main">右側中譯</button>
+      <button id="toggle-side-trans-btn" type="button" class="btn btn-main">中譯</button>
       <button id="open-upload-btn" type="button" class="btn">上傳文章</button>
-      <button id="font-btn" type="button" class="btn">字級</button>
       <button id="theme-btn" type="button" class="btn">深色</button>
     </div>
   </header>
 
-  <!-- 雙欄閱讀主體：左側法文原文，右側完整中文對照翻譯 -->
+  <!-- 雙欄閱讀主體：左側法文原文，右側完整中文對照翻譯（可收合） -->
   <main class="reading-area">
     <div id="dual-layout" class="dual-columns show-translation">
       <!-- 左欄：純淨法文原文 -->
@@ -30,9 +29,12 @@
         <div id="article-body" class="article-content"></div>
       </article>
 
-      <!-- 右欄：文章完整中文翻譯對照 -->
+      <!-- 右欄：文章完整中文翻譯對照（右上角有「收起」按鈕） -->
       <article id="trans-column" class="column-card col-translation">
-        <h2 id="trans-title" class="article-title trans-header-title">中文翻譯</h2>
+        <div class="trans-top-bar">
+          <h2 id="trans-title" class="trans-header-title">中文翻譯</h2>
+          <button id="close-trans-col-btn" type="button" class="btn btn-sm">收起</button>
+        </div>
         <div id="article-translation" class="article-content trans-content"></div>
       </article>
     </div>
@@ -73,7 +75,7 @@
     </div>
   </div>
 
-  <script src="js/french-analyzer.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/french-analyzer.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>
