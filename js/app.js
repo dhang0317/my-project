@@ -204,33 +204,57 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     }
   }
 
-  // 自動非同步翻譯自訂文章為中文
+  // 分句安全翻譯函數（防止段落超過 500 字元引發 MyMemory 限制報錯）
+  async function safeTranslateText(text) {
+    const clean = (text || '').trim();
+    if (!clean) return '';
+
+    // 1. 優先使用 Google Translate（無 500 字元限制）
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-TW&dt=t&q=${encodeURIComponent(clean)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data[0])) {
+          const trans = data[0].map(s => s[0] || '').join('');
+          if (trans && !trans.includes('QUERY LENGTH LIMIT')) {
+            return trans;
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 2. 若必須使用 MyMemory，將文字以句號拆成每句 < 250 字元小段落逐句翻譯後拼接
+    const sentences = clean.match(/[^.!?«»\n]+[.!?«»\n]*/g) || [clean];
+    const transParts = [];
+
+    for (const sent of sentences) {
+      const s = sent.trim();
+      if (!s) continue;
+      let partZh = '';
+      try {
+        const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(s.slice(0, 300))}&langpair=fr|zh-TW`;
+        const res = await fetch(mmUrl);
+        if (res.ok) {
+          const d = await res.json();
+          const tText = d?.responseData?.translatedText || '';
+          if (tText && !tText.includes('QUERY LENGTH LIMIT EXCEEDED')) {
+            partZh = tText;
+          }
+        }
+      } catch (_) {}
+      transParts.push(partZh || s);
+    }
+
+    return transParts.join(' ');
+  }
+
+  // 自動非同步翻譯自訂文章為中文（逐段分句翻譯，絕對不超過字數限制）
   async function autoTranslateFullArticle(art, paragraphs) {
     const translatedList = [];
     for (let i = 0; i < paragraphs.length; i++) {
       const p = paragraphs[i];
-      let pZh = '';
-      try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-TW&dt=t&q=${encodeURIComponent(p)}`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data[0])) {
-            pZh = data[0].map(s => s[0] || '').join('');
-          }
-        }
-      } catch (_) {}
-
-      if (!pZh) {
-        try {
-          const mm = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(p)}&langpair=fr|zh-TW`);
-          const d = await mm.json();
-          pZh = d?.responseData?.translatedText || p;
-        } catch (_) {
-          pZh = p;
-        }
-      }
-
+      const pZh = await safeTranslateText(p);
       translatedList.push(pZh);
       const targetEl = document.getElementById(`trans-p-${i}`);
       if (targetEl) targetEl.textContent = pZh;
@@ -268,33 +292,11 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
       }
     }
 
-    // 線上免費翻譯
-    try {
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-TW&dt=t&q=${encodeURIComponent(clean)}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data[0])) {
-          const trans = data[0].map(s => s[0] || '').join('');
-          if (trans) {
-            dockZh.textContent = trans;
-            return;
-          }
-        }
-      }
-    } catch (_) {}
-
-    // 備援翻譯
-    try {
-      const mmUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean)}&langpair=fr|zh-TW`;
-      const res = await fetch(mmUrl);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.responseData?.translatedText) {
-          dockZh.textContent = data.responseData.translatedText;
-        }
-      }
-    } catch (_) {}
+    // 線上安全分句翻譯（保證不超過 500 字元長度限制）
+    const trans = await safeTranslateText(clean);
+    if (trans) {
+      dockZh.textContent = trans;
+    }
   }
 
   // 監聽事件
