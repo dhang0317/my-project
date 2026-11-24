@@ -25,3 +25,30 @@ npm run dev
 ```
 
 啟動後打開 `http://localhost:3000` 即可開始使用。
+
+## 🔌 MCP Server（讓 AI 助手直接讀寫你的法文書庫）
+
+本專案內建零相依性的 **MCP (Model Context Protocol) Server**（`mcp-server.js`），免 `npm install`，可直接串接 Claude Desktop、Cursor、Windsurf 或任何支援 stdio MCP 的 AI 客戶端。
+
+### 客戶端設定範例（`claude_desktop_config.json` 或 Cursor MCP 設定）
+
+```json
+{
+  "mcpServers": {
+    "atelier-de-lecture": {
+      "command": "node",
+      "args": ["/你的專案路徑/my-project/mcp-server.js"]
+    }
+  }
+}
+```
+
+### 支援的 MCP Tools
+- `list_articles` / `get_article` / `add_article` / `import_article_from_url`：瀏覽、查詢、新增或從網址匯入法文文章。
+- `list_vocabulary` / `add_vocabulary` / `update_vocabulary_mastery`：查詢生字本（可篩選低熟練度單字複習）、新增生字、更新熟練度 (0–5)。
+- `add_highlight`：為文章新增四色螢光筆標記。
+- `translate_french`：法文翻譯為繁體中文並執行原形還原與語法結構拆解。
+
+### 支援的 MCP Resources
+- `atelier://library`（完整資料庫）、`atelier://articles`（文章摘要）、`atelier://vocabulary`（生字本）。
+
