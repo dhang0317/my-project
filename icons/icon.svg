@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#f7f3eb"/>
+  <rect x="44" y="44" width="424" height="424" rx="84" fill="#efe6d5" stroke="#c8b69a" stroke-width="8"/>
+  <path d="M136 144h96c24 0 40 12 40 32v192c-12-10-28-16-48-16h-88V144z" fill="#fffdf8" stroke="#6b2d2c" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M376 144h-96c-24 0-40 12-40 32v192c12-10 28-16 48-16h88V144z" fill="#fffdf8" stroke="#6b2d2c" stroke-width="14" stroke-linejoin="round"/>
+  <line x1="168" y1="204" x2="220" y2="204" stroke="#6b2d2c" stroke-width="12" stroke-linecap="round"/>
+  <line x1="168" y1="244" x2="220" y2="244" stroke="#a68a64" stroke-width="10" stroke-linecap="round"/>
+  <line x1="168" y1="284" x2="212" y2="284" stroke="#a68a64" stroke-width="10" stroke-linecap="round"/>
+  <text x="316" y="268" text-anchor="middle" font-family="Georgia, serif" font-size="88" font-weight="bold" fill="#6b2d2c">Fr</text>
+</svg>

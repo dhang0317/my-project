@@ -1,0 +1,19 @@
+{
+  "name": "L'Atelier de Lecture — 法文閱讀器",
+  "short_name": "法文閱讀器",
+  "description": "法式羊皮紙沉浸式法文文章閱讀與反白翻譯學習系統（支援離線閱讀）",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f3eb",
+  "theme_color": "#f7f3eb",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
