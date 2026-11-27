@@ -266,6 +266,35 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     saveArticles();
   }
 
+  // 單字專用查詢：優先抓 Google 翻譯辭典多義 (dt=bd)，避免單字被翻成奇怪成語
+  async function safeTranslateWord(word) {
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-TW&dt=t&dt=bd&q=${encodeURIComponent(word)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        const dictTerms = [];
+        if (Array.isArray(data[1])) {
+          for (const posBlock of data[1]) {
+            if (Array.isArray(posBlock[1])) {
+              for (const term of posBlock[1].slice(0, 4)) {
+                if (term && !dictTerms.includes(term)) dictTerms.push(term);
+              }
+            }
+          }
+        }
+        if (dictTerms.length > 0) {
+          return dictTerms.slice(0, 5).join('、');
+        }
+        if (Array.isArray(data[0])) {
+          const trans = data[0].map(s => s[0] || '').join('');
+          if (trans) return trans;
+        }
+      }
+    } catch (_) {}
+    return safeTranslateText(word);
+  }
+
   // 底部置底列單字/片語/選取翻譯
   async function performTranslation(text) {
     const clean = (text || '').trim();
@@ -276,7 +305,9 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     dockLemma.style.display = 'none';
     dockPos.style.display = 'none';
 
-    // 本地詞彙庫優先（零延遲）
+    let hasCuratedHint = false;
+
+    // 本地詞彙庫優先（零延遲，且優先保留精準詞典釋義）
     if (window.FrenchAnalyzer) {
       const analysis = window.FrenchAnalyzer.analyzeSelection(clean, '');
       const morph = analysis.primaryMorph;
@@ -291,12 +322,18 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
         }
         if (morph.zhHint) {
           dockZh.textContent = morph.zhHint;
+          hasCuratedHint = true;
         }
       }
     }
 
-    // 線上安全分句翻譯（保證不超過 500 字元長度限制）
-    const trans = await safeTranslateText(clean);
+    if (hasCuratedHint) return;
+
+    // 單字使用辭典多義查詢 (dt=bd)；片語或整句使用安全分句翻譯
+    const isSingleWord = !/\s/.test(clean) && clean.length <= 30;
+    const trans = isSingleWord
+      ? await safeTranslateWord(clean)
+      : await safeTranslateText(clean);
     if (trans) {
       dockZh.textContent = trans;
     }

@@ -41,11 +41,15 @@
     "qu'est-ce que": { lemma: "qu'est-ce que", pos: "疑問片語", zh: "什麼" },
     "qu'est-ce qui": { lemma: "qu'est-ce qui", pos: "疑問片語", zh: "什麼（主格）" },
     "c'est-à-dire": { lemma: "c'est-à-dire", pos: "連接詞片語", zh: "也就是說、即" },
-    "il y a": { lemma: "il y a", pos: "無人稱片語", zh: "有；…以前" }
+    "il y a": { lemma: "il y a", pos: "無人稱片語", zh: "有；…以前" },
+    "prendre du recul": { lemma: "prendre du recul", pos: "動詞片語", zh: "退一步看、拉開距離冷靜思考" },
+    "avec le recul": { lemma: "avec le recul", pos: "介系詞片語", zh: "事後看來、經過時間沉澱後" },
+    "avec du recul": { lemma: "avec du recul", pos: "介系詞片語", zh: "帶著距離感、事後冷靜回顧" }
   };
 
   // Core dictionary of high-frequency irregular verbs, words, and literary vocabulary
   const CORE_LEXICON = {
+    "recul": { lemma: "recul", pos: "陽性名詞 (n.m.)", tense: "名詞原形", zh: "減少、縮減、衰退、倒退；後退距離；(引申) 事後回顧" },
     // Irregular verb forms -> lemma, pos, tense/person info, Chinese meaning
     "suis": { lemma: "être", pos: "動詞 (v.)", tense: "直陳式現在時 (je suis)", zh: "是、存在、處於" },
     "es": { lemma: "être", pos: "動詞 (v.)", tense: "直陳式現在時 (tu es)", zh: "是、處於" },
