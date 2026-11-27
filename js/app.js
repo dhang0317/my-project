@@ -114,10 +114,13 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     return DEFAULT_ARTICLES;
   }
 
-  function saveArticles() {
+  function saveArticles(skipCloud) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
     } catch (_) {}
+    if (!skipCloud && window.FirebaseSync && typeof window.FirebaseSync.saveArticles === 'function') {
+      window.FirebaseSync.saveArticles(articles);
+    }
   }
 
   function escapeHtml(str) {
@@ -434,7 +437,29 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     });
   }
 
+  function connectFirebaseSync() {
+    if (!window.FirebaseSync || typeof window.FirebaseSync.startRealtimeSync !== 'function') return;
+    window.FirebaseSync.startRealtimeSync(
+      (remoteArticles) => {
+        articles = remoteArticles;
+        if (!articles.some(a => a.id === currentId) && articles.length > 0) {
+          currentId = articles[0].id;
+        }
+        saveArticles(true);
+        renderDropdown();
+        renderContent();
+      },
+      () => articles
+    );
+  }
+
   renderDropdown();
   renderContent();
   initEvents();
+
+  if (window.FirebaseSync) {
+    connectFirebaseSync();
+  } else {
+    window.addEventListener('firebase-sync-ready', connectFirebaseSync, { once: true });
+  }
 })();
