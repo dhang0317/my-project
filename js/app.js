@@ -266,33 +266,54 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     saveArticles();
   }
 
-  // 單字專用查詢：優先抓 Google 翻譯辭典多義 (dt=bd)，避免單字被翻成奇怪成語
-  async function safeTranslateWord(word) {
+  // 單字專用查詢：抓取 Google 翻譯辭典多義 (dt=bd)，必要時以原形 (lemma) 補查
+  async function fetchDictTerms(word) {
     try {
       const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=zh-TW&dt=t&dt=bd&q=${encodeURIComponent(word)}`;
       const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        const dictTerms = [];
-        if (Array.isArray(data[1])) {
-          for (const posBlock of data[1]) {
-            if (Array.isArray(posBlock[1])) {
-              for (const term of posBlock[1].slice(0, 4)) {
-                if (term && !dictTerms.includes(term)) dictTerms.push(term);
-              }
+      if (!res.ok) return { terms: [], primary: '' };
+      const data = await res.json();
+      const terms = [];
+      if (Array.isArray(data[1])) {
+        for (const posBlock of data[1]) {
+          if (Array.isArray(posBlock[1])) {
+            for (const term of posBlock[1].slice(0, 4)) {
+              if (term && !terms.includes(term)) terms.push(term);
             }
           }
         }
-        if (dictTerms.length > 0) {
-          return dictTerms.slice(0, 5).join('、');
-        }
-        if (Array.isArray(data[0])) {
-          const trans = data[0].map(s => s[0] || '').join('');
-          if (trans) return trans;
-        }
       }
-    } catch (_) {}
-    return safeTranslateText(word);
+      const primary = Array.isArray(data[0]) ? data[0].map(s => s[0] || '').join('') : '';
+      return { terms, primary };
+    } catch (_) {
+      return { terms: [], primary: '' };
+    }
+  }
+
+  async function safeTranslateWord(word, lemma = '') {
+    const cleanWord = word.replace(/^[«»"'([{]+|[»"'.,!?;:)\]}]+$/g, '');
+    const strippedElision = cleanWord.replace(/^(?:l|d|j|m|t|s|c|n|qu)['’]/i, '');
+    const target = strippedElision || cleanWord;
+
+    const first = await fetchDictTerms(target);
+    let terms = [...first.terms];
+
+    // 若變位字或縮寫查不到辭典多義，改用原形 (lemma) 再查一次辭典多義
+    if (terms.length === 0 && lemma && lemma.toLowerCase() !== target.toLowerCase()) {
+      const lemmaRes = await fetchDictTerms(lemma);
+      terms = [...lemmaRes.terms];
+      if (terms.length === 0 && lemmaRes.primary) {
+        return lemmaRes.primary;
+      }
+    }
+
+    if (terms.length > 0) {
+      return terms.slice(0, 6).join('、');
+    }
+    if (first.primary) {
+      return first.primary;
+    }
+    return safeTranslateText(cleanWord);
   }
 
   // 底部置底列單字/片語/選取翻譯
@@ -305,14 +326,16 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
     dockLemma.style.display = 'none';
     dockPos.style.display = 'none';
 
-    let hasCuratedHint = false;
+    let curatedHint = '';
+    let lemma = '';
 
-    // 本地詞彙庫優先（零延遲，且優先保留精準詞典釋義）
+    // 本地詞彙庫先即時顯示原形、詞性與精準核心釋義
     if (window.FrenchAnalyzer) {
       const analysis = window.FrenchAnalyzer.analyzeSelection(clean, '');
       const morph = analysis.primaryMorph;
       if (morph) {
         if (morph.lemma) {
+          lemma = morph.lemma;
           dockLemma.textContent = `原形: ${morph.lemma}`;
           dockLemma.style.display = 'inline-block';
         }
@@ -321,19 +344,35 @@ Aujourd'hui encore, s'asseoir en terrasse permet de ralentir le rythme effréné
           dockPos.style.display = 'inline-block';
         }
         if (morph.zhHint) {
-          dockZh.textContent = morph.zhHint;
-          hasCuratedHint = true;
+          curatedHint = morph.zhHint;
+          dockZh.textContent = curatedHint;
         }
       }
     }
 
-    if (hasCuratedHint) return;
+    // 每一個單字皆套用辭典多義查詢 (dt=bd)；片語或整句使用安全分句翻譯
+    const isSingleWord = !/\s/.test(clean) && clean.length <= 35;
+    if (isSingleWord) {
+      const dictTrans = await safeTranslateWord(clean, lemma);
+      if (curatedHint && dictTrans) {
+        // 合併內建核心釋義與辭典多義，去重複
+        const merged = curatedHint.split(/[、；;，,]/).map(s => s.trim()).filter(Boolean);
+        for (const t of dictTrans.split('、')) {
+          const item = t.trim();
+          if (item && !merged.some(m => m.includes(item) || item.includes(m))) {
+            merged.push(item);
+          }
+        }
+        dockZh.textContent = merged.slice(0, 6).join('、');
+      } else if (dictTrans) {
+        dockZh.textContent = dictTrans;
+      }
+      return;
+    }
 
-    // 單字使用辭典多義查詢 (dt=bd)；片語或整句使用安全分句翻譯
-    const isSingleWord = !/\s/.test(clean) && clean.length <= 30;
-    const trans = isSingleWord
-      ? await safeTranslateWord(clean)
-      : await safeTranslateText(clean);
+    if (curatedHint) return;
+
+    const trans = await safeTranslateText(clean);
     if (trans) {
       dockZh.textContent = trans;
     }

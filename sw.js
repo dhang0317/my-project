@@ -1,10 +1,10 @@
-const CACHE_NAME = 'atelier-de-lecture-v3';
+const CACHE_NAME = 'atelier-de-lecture-v4';
 const PRECACHE_URLS = [
   './',
   './index.html',
   './css/styles.css?v=8',
   './js/french-analyzer.js?v=9',
-  './js/app.js?v=10',
+  './js/app.js?v=11',
   './js/firebase-sync.js?v=1',
   './data/library.json',
   './manifest.webmanifest',
