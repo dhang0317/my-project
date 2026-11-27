@@ -1,8 +1,11 @@
 {
   "version": 2,
+  "framework": null,
   "buildCommand": "",
   "outputDirectory": ".",
-  "rewrites": [
-    { "source": "/api/mcp", "destination": "/api/mcp" }
-  ]
+  "functions": {
+    "api/mcp.js": {
+      "includeFiles": "data/library.json"
+    }
+  }
 }
